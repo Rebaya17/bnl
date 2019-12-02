@@ -78,9 +78,6 @@ namespace bnl {
                 // The integer part sign
                 bool int_sign;
 
-                // The exponent sign
-                bool exp_sign;
-
                 // Index where the integer part begin
                 std::size_t begin;
 
