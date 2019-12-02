@@ -66,36 +66,6 @@ namespace bnl {
     // Integer class
     class integer {
         private:
-            // Structs
-
-            // Decimal std::string decimal representation information
-            struct decimalinfo {
-                // Attributes
-
-                // Is a valid std::string
-                bool valid;
-
-                // The integer part sign
-                bool int_sign;
-
-                // Index where the integer part begin
-                std::size_t begin;
-
-                // Decimal point index
-                std::size_t point;
-
-                // Index where the exponent begin
-                std::size_t exp;
-
-                // End of the number
-                std::size_t end;
-
-
-                // Default constructor
-                decimalinfo();
-            };
-
-
             // Attributes
 
             // Numeric data array
@@ -112,12 +82,6 @@ namespace bnl {
 
             // Numeric representation base
             static const bnl::ulint BASE;
-
-
-            // Static functions
-
-            // Check if the std::string is a valid decimal representation
-            static const bnl::integer::decimalinfo isdecimal(const std::string &str);
 
 
             // Static inline functions
@@ -172,6 +136,12 @@ namespace bnl {
 
             // Positive one
             static const bnl::integer one;
+
+
+            // Static methods
+
+            // Check if the std::string is a valid decimal representation and process it
+            static const std::string checkstr(const std::string &str, bool *const sign = NULL);
 
 
             // Constructors
