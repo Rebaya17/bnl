@@ -4,13 +4,10 @@
 #include <iomanip>   // std::setfill, std::setw, std::setprecision
 
 
-// Private static constants
+// Public static constants
 
 // Numeric representation base
-const bnl::ulint bnl::integer::BASE = 0x0100000000;
-
-
-// Public static constants
+const bnl::ulint bnl::integer::base = 0x0100000000;
 
 // Zero
 const bnl::integer zero;

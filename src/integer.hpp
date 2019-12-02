@@ -78,12 +78,6 @@ namespace bnl {
             bool sign;
 
 
-            // Static constants
-
-            // Numeric representation base
-            static const bnl::ulint BASE;
-
-
             // Static inline functions
 
             // Compare and returns -1 if a < b, 0 if a == b, and 1 if a > b
@@ -130,6 +124,9 @@ namespace bnl {
 
         public:
             // Static constants
+
+            // Numeric representation base
+            static const bnl::ulint base;
 
             // Zero
             static const bnl::integer zero;
