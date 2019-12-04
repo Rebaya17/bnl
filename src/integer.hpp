@@ -413,6 +413,7 @@ namespace bnl {
             // Integer destructor
             inline ~integer() {
                 std::free(data);
+                data = NULL;
                 size = 0;
                 sign = false;
             }
