@@ -58,8 +58,7 @@ const std::string bnl::integer::checkstr(const std::string &str, bool *const sig
                 if (bnl::integer::issign(c))  {state = 1; is_neg = c == '-';    break;}
                 if (bnl::integer::isdigit(c)) {state = 3;                       break;}
                 if (bnl::integer::ispoint(c)) {state = 2; begin = 1; point = 0; break;}
-                valid = false;
-                break;
+                valid = false; break;
 
             case 1: // Sign found
                 has_sign = true;
@@ -160,7 +159,71 @@ bnl::integer::integer(const std::string &str) : data(NULL), size(0), sign(false)
     }
 
 
-    // Dabble-Double, inverse of Double-Dabble to convert BDC to binary
+    // Reverse Double-Dabble to convert BDC to binary
+
+    // Numeric data size
+    const std::size_t num_size = num.size();
+    size = ((num_size - 1) >> 3) + 1;
+
+    // Algorithm sizes
+    const std::size_t nibbles = size << 3;
+    const std::size_t bits = size << 5;
+
+    // Algorithm memory
+    data = static_cast<bnl::ulint *>(std::calloc(size << 1, bnl::ulint_size));
+    bnl::uchar *const bin = reinterpret_cast<bnl::uchar *>(data);
+    bnl::uchar *const bcd = bin + nibbles;
+
+    const bnl::uchar *const bcd_top = bcd + num_size - 1;
+    const std::size_t bin_top = ((size - 1) << 3) + 3;
+
+    // Copy the number data
+    for (std::size_t i = 0; i < num_size; i++)
+        bcd[i] = num[i] - '0';
+
+
+    // Main bucle for each bit
+    for (std::size_t i = 0; i < bits; i++) {
+        bnl::uchar bcd_r = 0;
+        bnl::uchar bcd_l = 0;
+        bnl::uchar bin_r = 0;
+        bnl::uchar bin_l = *bcd_top & 1;
+
+        // Shift each block
+        for (std::size_t j = 0, k = bin_top; j < nibbles; j++) {
+            // Shift the binary block
+            bnl::uchar *block;
+            if ((j & 7) < 4) {
+                block = bin + k;
+                bin_r    = *block & 1;
+                *block >>= 1;
+                *block  |= bin_l << 7;
+                bin_l    = bin_r;
+
+                // Binary block increment
+                k -= k & 7 ? 1 : 5;
+            }
+
+            // Shift the bcd block
+            block = bcd + j;
+            bcd_r    = *block & 1;
+            *block >>= 1;
+            *block  |= bcd_l << 3;
+            bcd_l    = bcd_r;
+
+            // Condition
+            if (*block >= 8)
+                *block -= 3;
+        }
+    }
+
+
+    // Fix the numeric data size
+    for (std::size_t i = size - 1; i && !data[i]; i--)
+        size--;
+
+    // Release the algorithm memory
+    data = static_cast<bnl::ulint *>(std::realloc(data, size * bnl::ulint_size));
 }
 
 // Constructor from long double
