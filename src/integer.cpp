@@ -202,7 +202,7 @@ bnl::integer::integer(const std::string &str) : data(NULL), size(0), sign(false)
             }
 
             // Shift the bcd block
-            bnl::uchar &block = bin[k];
+            bnl::uchar &block = bcd[k];
             bcd_r   = block & 1;
             block >>= 1;
             block  |= bcd_l << 3;
