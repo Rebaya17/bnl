@@ -153,10 +153,8 @@ bnl::integer::integer(const std::string &str) : data(NULL), size(0), sign(false)
     const std::string num = bnl::integer::checkstr(str, &sign);
 
     // Check if is valid
-    if (num.empty()) {
-        static const std::string msg = "can't build bnl::integer from std::string: invalid format";
-        throw std::invalid_argument(msg);
-    }
+    if (num.empty())
+        throw std::invalid_argument("can't build bnl::integer from std::string: invalid format");
 
 
     // Reverse Double-Dabble to convert BDC to binary
@@ -228,24 +226,18 @@ bnl::integer::integer(const std::string &str) : data(NULL), size(0), sign(false)
 // Constructor from long double
 bnl::integer::integer(const bnl::ldouble &n) : data(NULL), size(0), sign(false) {
     // Check if is nan
-    if (n != n) {
-        static const char msg[] = "can't build bnl::integer from long double: is nan";
-        throw std::invalid_argument(msg);
-    }
+    if (n != n)
+        throw std::invalid_argument("can't build bnl::integer from long double: is nan");
 
     // Check if is positive infinite
     static const bnl::ldouble inf_pos = 1.0L / 0.0L;
-    if (n == inf_pos) {
-        static const char msg[] = "can't build bnl::integer from long double: is inf";
-        throw std::invalid_argument(msg);
-    }
+    if (n == inf_pos)
+        throw std::invalid_argument("can't build bnl::integer from long double: is inf");
 
     // Check if is negative infinite
     static const bnl::ldouble inf_neg = -1.0L / 0.0L;
-    if (n < inf_neg) {
-        static const char msg[] = "can't build bnl::integer from long double: is -inf";
-        throw std::invalid_argument(msg);
-    }
+    if (n < inf_neg)
+        throw std::invalid_argument("can't build bnl::integer from long double: is -inf");
 
     // Cast to std::string and build bnl::integer
     std::stringstream stream;
@@ -260,10 +252,9 @@ bnl::integer::integer(const bnl::ldouble &n) : data(NULL), size(0), sign(false) 
 const std::string bnl::str(const bnl::integer &n, const int &radix) {
     // Check the radix
     if (radix != 10) {
-        static const std::string msg = "can't convert bnl::integer to std::string: invalid radix ";
         std::stringstream stream;
         stream << radix;
-        throw std::invalid_argument(msg + stream.str());
+        throw std::invalid_argument("can't convert bnl::integer to std::string: invalid radix " + stream.str());
     }
 
     // Well known integers
