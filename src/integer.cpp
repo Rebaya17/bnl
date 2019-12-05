@@ -202,7 +202,7 @@ bnl::integer::integer(const std::string &str) : data(NULL), size(0), sign(false)
             }
 
             // Shift the bcd block
-            bnl::uchar &block = bcd[k];
+            bnl::uchar &block = bcd[j];
             bcd_r   = block & 1;
             block >>= 1;
             block  |= bcd_l << 3;
@@ -215,12 +215,10 @@ bnl::integer::integer(const std::string &str) : data(NULL), size(0), sign(false)
     }
 
 
-    // Fix the numeric data size
-    for (std::size_t i = size - 1; i && !data[i]; i--)
-        size--;
-
-    // Release the algorithm memory
-    data = static_cast<bnl::ulint *>(std::realloc(data, size * bnl::ulint_size));
+    // Shrink the numeric data
+    size += 4;
+    size -= 4;
+    shrink();
 }
 
 // Constructor from long double
@@ -363,12 +361,146 @@ const bnl::integer operator % (const bnl::integer &a, const bnl::integer &b) {
 
 // Addition
 const bnl::integer operator + (const bnl::integer &a, const bnl::integer &b) {
+    // Zeros
+    if (bnl::iszero(a))
+        return b;
 
+    if (bnl::iszero(b))
+        return a;
+
+
+    // Different signs
+    if (!a.sign && b.sign)
+        return a - -b;
+
+    if (a.sign && !b.sign)
+        return b - -a;
+
+
+    // Operands and answer variables
+    const bnl::integer &m = a.size >= b.size ? a : b;
+    const bnl::integer &n = &m == &a ? b : a;
+    bnl::integer ans(m.size, m.sign);
+
+    // Auxiliar variables
+    std::size_t i = 0;
+    bnl::ulint carry = 0;
+
+
+    // Addition main bucle
+    while (i < n.size) {
+        // Add
+        ans.data[i] = m.data[i] + n.data[i] + carry;
+
+        // Reset the carry
+        if (carry)
+            carry = 0;
+
+        // Check carry
+        if (ans.data[i] >= bnl::integer::base) {
+            carry = 1;
+            ans.data[i] -= bnl::integer::base;
+        }
+
+        // Index increment
+        i++;
+    }
+
+    // Extra digits bucle
+    while (i < m.size) {
+        // Add
+        ans.data[i] = m.data[i] + carry;
+
+        // Reset the carry
+        if (carry)
+            carry = 0;
+
+        // Check carry
+        if (ans.data[i] >= bnl::integer::base) {
+            carry = 1;
+            ans.data[i] -= bnl::integer::base;
+        }
+
+        // Index increment
+        i++;
+    }
+
+
+    // Carry
+    if (carry) {
+        ans.size++;
+        ans.data = static_cast<bnl::ulint *>(std::realloc(ans.data, ans.size * bnl::ulint_size));
+        ans.data[ans.size - 1] = 1;
+    }
+
+    // Return the answer
+    return ans;
 }
 
 // Subtraction
 const bnl::integer operator - (const bnl::integer &a, const bnl::integer &b) {
+    // Same object
+    if (&a == &b)
+        return bnl::integer::zero;
 
+
+    // Different signs
+    if (a.sign != b.sign)
+        return a + -b;
+
+
+    // Operands and answer variables
+    const bnl::integer &m = bnl::abs(a) >= bnl::abs(b) ? a : b;
+    const bnl::integer &n = &m == &a ? b : a;
+    bnl::integer ans(m.size, &m == &a ? a.sign : !b.sign);
+
+    // Auxiliar variables
+    std::size_t i = 0;
+    bnl::ulint carry = 0;
+
+
+    // Subtraction main bucle
+    while (i < n.size) {
+        // Subtract
+        ans.data[i] = m.data[i] - n.data[i] - carry;
+
+        // Reset the carry
+        if (carry)
+            carry = 0;
+
+        // Check carry
+        if (ans.data[i] >= bnl::integer::base) {
+            carry = 1;
+            ans.data[i] += bnl::integer::base;
+        }
+
+        // Index increment
+        i++;
+    }
+
+    // Extra digits bucle
+    while (i < m.size) {
+        // Subtract
+        ans.data[i] = m.data[i] - carry;
+
+        // Reset the carry
+        if (carry)
+            carry = 0;
+
+        // Check carry
+        if (ans.data[i] >= bnl::integer::base) {
+            carry = 1;
+            ans.data[i] += bnl::integer::base;
+        }
+
+        // Index increment
+        i++;
+    }
+
+
+    // Shrink the numeric data and return
+    ans.shrink();
+    return ans;
 }
 
 // Left shift

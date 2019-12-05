@@ -124,6 +124,32 @@ namespace bnl {
             }
 
 
+            // Constructors
+
+            // Empty integer
+            inline integer(const std::size_t &size, const bool &sign) : data(NULL), size(size), sign(sign) {
+                // Check size
+                if (!size)
+                    throw std::invalid_argument("can't build bnl::integer from private constructor: invalid size");
+
+                // Reserve empty memory
+                data = static_cast<bnl::ulint *>(std::calloc(size, bnl::ulint_size));
+            }
+
+
+            // Methods
+
+            // Shrink numeric data
+            inline void shrink() {
+                // Update size
+                for (std::size_t i = size - 1; i && !data[i]; i--)
+                    size--;
+
+                // Resize the numeric data
+                data = static_cast<bnl::ulint *>(std::realloc(data, size * bnl::ulint_size));
+            }
+
+
 
         public:
             // Static constants
@@ -494,11 +520,11 @@ inline std::istream &operator >> (std::istream &stream, bnl::integer &n) {
 
 // Comparison and relational operators
 inline bool operator >= (const bnl::integer &a, const bnl::integer &b) {
-    return !(a > b);
+    return !(a < b);
 }
 
 inline bool operator <= (const bnl::integer &a, const bnl::integer &b) {
-    return !(a < b);
+    return !(a > b);
 }
 
 inline bool operator == (const bnl::integer &a, const bnl::integer &b) {
