@@ -62,6 +62,9 @@ namespace bnl {
     const bnl::integer min(const bnl::integer &a, const bnl::integer &b);
     const bnl::integer pow(const bnl::integer &a, const bnl::integer &b);
 
+    // Other helpful functions
+    std::string const str(const bnl::integer &n, const int &radix = 10);
+
 
     // Integer class
     class integer {
@@ -165,10 +168,6 @@ namespace bnl {
 
             // Methods
 
-            // Get the string representation with the given radix
-            std::string const str(const int &radix = 10) const;
-
-
             // Returns whether the value is even
             friend bool iseven(const bnl::integer &n);
 
@@ -199,6 +198,10 @@ namespace bnl {
 
             // Returns the given number raised to the given exponent
             friend const bnl::integer pow(const bnl::integer &a, const bnl::integer &b);
+
+
+            // Get the string representation with the given radix
+            friend const std::string str(const bnl::integer &n, const int &radix);
 
 
             // Operators overloading

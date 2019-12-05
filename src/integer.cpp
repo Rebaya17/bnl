@@ -254,11 +254,94 @@ bnl::integer::integer(const bnl::ldouble &n) : data(NULL), size(0), sign(false) 
     *this = bnl::integer(stream.str());
 }
 
+
 // Methods
 
 // Get the string representation with the given radix
-std::string const bnl::integer::str(const int &radix) const {
+const std::string bnl::str(const bnl::integer &n, const int &radix) {
+    // Check the radix
+    if (radix != 10) {
+        static const std::string msg = "can't convert bnl::integer to std::string: invalid radix ";
+        std::stringstream stream;
+        stream << radix;
+        throw std::invalid_argument(msg + stream.str());
+    }
 
+    // Well known integers
+    static const std::string zero("0");
+    static const std::string one_pos("1");
+    static const std::string one_neg("-1");
+
+    // Zero or one
+    if (bnl::iszero(n)) return zero;
+    if (bnl::isone(n))  return n.sign ? one_neg : one_pos;
+
+
+    // Double-Dabble to convert binary to BCD
+
+    // Algorithm sizes
+    const std::size_t digits = n.size * 10;
+    const std::size_t bits = n.size << 5;
+
+    // Algorithm memory
+    bnl::uchar *const bcd = static_cast<bnl::uchar *>(std::calloc(digits, bnl::uchar_size));
+
+    const std::size_t digits_top = digits - 1;
+    const std::size_t bits_top = bits - 1;
+
+    // Algorithm auxiliar variables
+    static const std::size_t bit_mask = static_cast<std::size_t>(-1);
+    bool carry = false;
+
+    // Main bucle for each bit
+    for (std::size_t i = bits_top; i < bits; i--) {
+        bnl::uchar bit_l = 0;
+        bnl::uchar bit_r = (n.data[i >> 5] & (1 << (i & bit_mask))) > 0;
+
+        // Shift each block
+        for (bnl::uchar j = digits_top; j < digits; j--) {
+            // Block
+            bnl::uchar *const block = bcd + j;
+
+            // Condition
+            if (*block >= 5)
+                *block += 3;
+
+            // Shift BCD
+            bit_l    = *block >> 3;
+            *block <<= 1;
+            *block  &= 15;
+            *block  |= bit_r;
+            bit_r    = bit_l;
+        }
+
+        // Update carry
+        carry = static_cast<bool>(bit_l);
+    }
+
+
+    // Count zeros
+    std::size_t zeros = 0;
+    for (std::size_t i = 0; i < digits && !bcd[i]; i++)
+        zeros++;
+    
+    // Convert digits to character
+    for (std::size_t i = zeros; i < digits; i++)
+        bcd[i] += '0';
+
+    // String sign
+    std::string str;
+    if (n.sign)
+        str.append("-");
+
+    // String carry
+    if (carry)
+        str.append("1");
+
+    // Append the BCD data and return it
+    str.append(reinterpret_cast<const char *>(bcd + zeros));
+    std::free(bcd);
+    return str;
 }
 
 
@@ -268,7 +351,7 @@ std::string const bnl::integer::str(const int &radix) const {
 
 // To std::string
 bnl::integer::operator std::string() const {
-
+    return bnl::str(*this);
 }
 
 // Arithmetic operators
