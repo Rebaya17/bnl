@@ -69,12 +69,6 @@ namespace bnl {
     // Integer class
     class integer {
         private:
-            // Static attributes
-
-            // Base bit mask
-            static const bnl::ulint base_mod;
-
-
             // Attributes
 
             // Numeric data array
@@ -162,6 +156,9 @@ namespace bnl {
 
             // Numeric representation base
             static const bnl::ulint base;
+
+            // Base bit mask
+            static const bnl::ulint base_mask;
 
             // Zero
             static const bnl::integer zero;

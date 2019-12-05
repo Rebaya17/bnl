@@ -10,7 +10,7 @@
 const bnl::ulint bnl::integer::base = 0x0100000000;
 
 // Base bit mask
-const bnl::ulint bnl::integer::base_mod = bnl::integer::base - 1;
+const bnl::ulint bnl::integer::base_mask = bnl::integer::base - 1;
 
 // Zero
 const bnl::integer bnl::integer::zero;
@@ -394,7 +394,7 @@ const bnl::integer operator * (const bnl::integer &a, const bnl::integer &b) {
             // Check carry
             if (prod.data[j] >= bnl::integer::base) {
                 carry = prod.data[j] / bnl::integer::base;
-                prod.data[j] &= bnl::integer::base_mod;
+                prod.data[j] &= bnl::integer::base_mask;
             }
         }
 
@@ -722,7 +722,7 @@ const bnl::integer operator & (const bnl::integer &a, const bnl::integer &b) {
         // AND main bucle
         while(i < n.size) {
             // Two's complement of m
-            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mod) + carry;
+            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry;
 
             // Reset carry
             if (carry)
@@ -748,7 +748,7 @@ const bnl::integer operator & (const bnl::integer &a, const bnl::integer &b) {
         // AND main bucle
         while(i < n.size) {
             // Two's complement of n
-            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mod) + carry;
+            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry;
 
             // Reset carry
             if (carry)
@@ -782,8 +782,8 @@ const bnl::integer operator & (const bnl::integer &a, const bnl::integer &b) {
         // AND main bucle
         while(i < n.size) {
             // Two's complements
-            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mod) + carry_m;
-            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mod) + carry_n;
+            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
+            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry_n;
 
             // Reset carries
             if (carry_m)
@@ -804,7 +804,7 @@ const bnl::integer operator & (const bnl::integer &a, const bnl::integer &b) {
             }
 
             // Two's complement of the AND operation
-            ans.data[i] = ((mc2 & nc2) ^ bnl::integer::base_mod) + carry_ans;
+            ans.data[i] = ((mc2 & nc2) ^ bnl::integer::base_mask) + carry_ans;
 
             // Reset carry
             if (carry_ans)
@@ -823,7 +823,7 @@ const bnl::integer operator & (const bnl::integer &a, const bnl::integer &b) {
         // Extra digits bucle
         while (i < m.size) {
             // Two's complement of m
-            ans.data[i] = (m.data[i] ^ bnl::integer::base_mod) + carry_m;
+            ans.data[i] = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
 
             // Reset the carry
             if (carry_m)
@@ -836,7 +836,7 @@ const bnl::integer operator & (const bnl::integer &a, const bnl::integer &b) {
             }
 
             // Two's complement of answer
-            ans.data[i] = (ans.data[i] ^ bnl::integer::base_mod) + carry_ans;
+            ans.data[i] = (ans.data[i] ^ bnl::integer::base_mask) + carry_ans;
 
             // Reset the carry
             if (carry_ans)
@@ -910,7 +910,7 @@ const bnl::integer operator | (const bnl::integer &a, const bnl::integer &b) {
         // OR main bucle
         while(i < n.size) {
             // Two's complement of m
-            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mod) + carry_m;
+            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
 
             // Reset carry
             if (carry_m)
@@ -923,7 +923,7 @@ const bnl::integer operator | (const bnl::integer &a, const bnl::integer &b) {
             }
 
             // Two's complement of the OR operation
-            ans.data[i] = ((mc2 | n.data[i]) ^ bnl::integer::base_mod) + carry_ans;
+            ans.data[i] = ((mc2 | n.data[i]) ^ bnl::integer::base_mask) + carry_ans;
 
             // Reset carry
             if (carry_ans)
@@ -955,7 +955,7 @@ const bnl::integer operator | (const bnl::integer &a, const bnl::integer &b) {
         // OR main bucle
         while(i < n.size) {
             // Two's complement of n
-            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mod) + carry_n;
+            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry_n;
 
             // Reset carry
             if (carry_n)
@@ -968,7 +968,7 @@ const bnl::integer operator | (const bnl::integer &a, const bnl::integer &b) {
             }
 
             // Two's complement of the OR operation
-            ans.data[i] = ((m.data[i] | nc2) ^ bnl::integer::base_mod) + carry_ans;
+            ans.data[i] = ((m.data[i] | nc2) ^ bnl::integer::base_mask) + carry_ans;
 
             // Reset carry
             if (carry_ans)
@@ -995,8 +995,8 @@ const bnl::integer operator | (const bnl::integer &a, const bnl::integer &b) {
         // OR main bucle
         while(i < n.size) {
             // Two's complements
-            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mod) + carry_m;
-            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mod) + carry_n;
+            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
+            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry_n;
 
             // Reset carries
             if (carry_m)
@@ -1017,7 +1017,7 @@ const bnl::integer operator | (const bnl::integer &a, const bnl::integer &b) {
             }
 
             // Two's complement of the AND operation
-            ans.data[i] = ((mc2 | nc2) ^ bnl::integer::base_mod) + carry_ans;
+            ans.data[i] = ((mc2 | nc2) ^ bnl::integer::base_mask) + carry_ans;
 
             // Reset carry
             if (carry_ans)
@@ -1091,7 +1091,7 @@ const bnl::integer operator ^ (const bnl::integer &a, const bnl::integer &b) {
         // OR main bucle
         while(i < n.size) {
             // Two's complement of m
-            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mod) + carry_m;
+            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
 
             // Reset carry
             if (carry_m)
@@ -1104,7 +1104,7 @@ const bnl::integer operator ^ (const bnl::integer &a, const bnl::integer &b) {
             }
 
             // Two's complement of the XOR operation
-            ans.data[i] = ((mc2 ^ n.data[i]) ^ bnl::integer::base_mod) + carry_ans;
+            ans.data[i] = ((mc2 ^ n.data[i]) ^ bnl::integer::base_mask) + carry_ans;
 
             // Reset carry
             if (carry_ans)
@@ -1123,7 +1123,7 @@ const bnl::integer operator ^ (const bnl::integer &a, const bnl::integer &b) {
         // Extra digits bucle
         while (i < m.size) {
             // Two's complement of m
-            ans.data[i] = (m.data[i] ^ bnl::integer::base_mod) + carry_m;
+            ans.data[i] = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
 
             // Reset the carry
             if (carry_m)
@@ -1136,7 +1136,7 @@ const bnl::integer operator ^ (const bnl::integer &a, const bnl::integer &b) {
             }
 
             // Two's complement of answer
-            ans.data[i] = (ans.data[i] ^ bnl::integer::base_mod) + carry_ans;
+            ans.data[i] = (ans.data[i] ^ bnl::integer::base_mask) + carry_ans;
 
             // Reset the carry
             if (carry_ans)
@@ -1162,7 +1162,7 @@ const bnl::integer operator ^ (const bnl::integer &a, const bnl::integer &b) {
         // OR main bucle
         while(i < n.size) {
             // Two's complement of n
-            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mod) + carry_n;
+            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry_n;
 
             // Reset carry
             if (carry_n)
@@ -1175,7 +1175,7 @@ const bnl::integer operator ^ (const bnl::integer &a, const bnl::integer &b) {
             }
 
             // Two's complement of the XOR operation
-            ans.data[i] = ((m.data[i] ^ nc2) ^ bnl::integer::base_mod) + carry_ans;
+            ans.data[i] = ((m.data[i] ^ nc2) ^ bnl::integer::base_mask) + carry_ans;
 
             // Reset carry
             if (carry_ans)
@@ -1207,8 +1207,8 @@ const bnl::integer operator ^ (const bnl::integer &a, const bnl::integer &b) {
         // OR main bucle
         while(i < n.size) {
             // Two's complements
-            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mod) + carry_m;
-            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mod) + carry_n;
+            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
+            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry_n;
 
             // Reset carries
             if (carry_m)
