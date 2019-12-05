@@ -10,10 +10,10 @@
 const bnl::ulint bnl::integer::base = 0x0100000000;
 
 // Zero
-const bnl::integer zero;
+const bnl::integer bnl::integer::zero;
 
 // One
-const bnl::integer one = "1";
+const bnl::integer bnl::integer::one("1");
 
 
 // Public static methods
@@ -324,7 +324,7 @@ const std::string bnl::str(const bnl::integer &n, const int &radix) {
     std::size_t zeros = 0;
     for (std::size_t i = 0; i < digits && !bcd[i]; i++)
         zeros++;
-    
+
     // Convert digits to character
     for (std::size_t i = zeros; i < digits; i++)
         bcd[i] += '0';
