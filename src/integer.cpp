@@ -174,7 +174,7 @@ bnl::integer::integer(const std::string &str) : data(NULL), size(0), sign(false)
     bnl::uchar *const bin = reinterpret_cast<bnl::uchar *>(data);
     bnl::uchar *const bcd = bin + nibbles;
 
-    const bnl::uchar *const bcd_top = bcd + num_size - 1;
+    const bnl::uchar &bcd_top = bcd[num_size - 1];
     const std::size_t bin_top = ((size - 1) << 3) + 3;
 
     // Copy the number data
@@ -187,33 +187,32 @@ bnl::integer::integer(const std::string &str) : data(NULL), size(0), sign(false)
         bnl::uchar bcd_r = 0;
         bnl::uchar bcd_l = 0;
         bnl::uchar bin_r = 0;
-        bnl::uchar bin_l = *bcd_top & 1;
+        bnl::uchar bin_l = bcd_top & 1;
 
         // Shift each block
         for (std::size_t j = 0, k = bin_top; j < nibbles; j++) {
             // Shift the binary block
-            bnl::uchar *block;
             if ((j & 7) < 4) {
-                block = bin + k;
-                bin_r    = *block & 1;
-                *block >>= 1;
-                *block  |= bin_l << 7;
-                bin_l    = bin_r;
+                bnl::uchar &block = bin[k];
+                bin_r   = block & 1;
+                block >>= 1;
+                block  |= bin_l << 7;
+                bin_l   = bin_r;
 
                 // Binary block increment
                 k -= k & 7 ? 1 : 5;
             }
 
             // Shift the bcd block
-            block = bcd + j;
-            bcd_r    = *block & 1;
-            *block >>= 1;
-            *block  |= bcd_l << 3;
-            bcd_l    = bcd_r;
+            bnl::uchar &block = bin[k];
+            bcd_r   = block & 1;
+            block >>= 1;
+            block  |= bcd_l << 3;
+            bcd_l   = bcd_r;
 
             // Condition
-            if (*block >= 8)
-                *block -= 3;
+            if (block >= 8)
+                block -= 3;
         }
     }
 
@@ -301,18 +300,18 @@ const std::string bnl::str(const bnl::integer &n, const int &radix) {
         // Shift each block
         for (bnl::uchar j = digits_top; j < digits; j--) {
             // Block
-            bnl::uchar *const block = bcd + j;
+            bnl::uchar &block = bcd[j];
 
             // Condition
-            if (*block >= 5)
-                *block += 3;
+            if (block >= 5)
+                block += 3;
 
             // Shift BCD
-            bit_l    = *block >> 3;
-            *block <<= 1;
-            *block  &= 15;
-            *block  |= bit_r;
-            bit_r    = bit_l;
+            bit_l   = block >> 3;
+            block <<= 1;
+            block  &= 15;
+            block  |= bit_r;
+            bit_r   = bit_l;
         }
 
         // Update carry
