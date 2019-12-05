@@ -346,7 +346,73 @@ bnl::integer::operator std::string() const {
 
 // Multiplication
 const bnl::integer operator * (const bnl::integer &a, const bnl::integer &b) {
+    // Zeros
+    if (bnl::iszero(a) || bnl::iszero(b))
+        return bnl::integer::zero;
 
+    // Ones
+    if (bnl::isone(a))
+        return a.sign ? -b : b;
+
+    if (bnl::isone(b))
+        return b.sign ? -a : a;
+
+
+    // Operands and answer variables
+    const bnl::integer &m = a.size > b.size ? a : b;
+    const bnl::integer &n = &m == &a ? b : a;
+    bnl::integer ans;
+
+    // Auxiliar variables
+    static const bnl::ulint bit_mask = bnl::integer::base - 1;
+    bnl::integer prod;
+
+
+    // Multiplication main bucle
+    for (std::size_t i = 0; i < n.size; i++) {
+        // Resize the intermediate product
+        prod.size = m.size + i;
+        prod.data = static_cast<bnl::ulint *>(std::realloc(prod.data, prod.size * bnl::ulint_size));
+
+        // Right padding with zeros
+        for (std::size_t j = 0; j < i; j++)
+            prod.data[j] = 0;
+
+        // Current block and carry
+        const bnl::ulint &block = n.data[i];
+        bnl::ulint carry = 0;
+
+        // Multiplication
+        for (std::size_t j = i, k = 0; k < m.size; j++, k++) {
+            // Multiply
+            prod.data[j] = m.data[k] * block + carry;
+
+            // Reset the carry
+            if (carry)
+                carry = 0;
+
+            // Check carry
+            if (prod.data[j] >= bnl::integer::base) {
+                carry = prod.data[j] / bnl::integer::base;
+                prod.data[j] &= bit_mask;
+            }
+        }
+
+        // Carry
+        if (carry) {
+            prod.size++;
+            prod.data = static_cast<bnl::ulint *>(std::realloc(prod.data, prod.size * bnl::ulint_size));
+            prod.data[prod.size - 1] = carry;
+        }
+
+        // Accumulate the intermediate product
+        ans += prod;
+    }
+
+
+    // Set the answer sign and return it
+    ans.sign = a.sign ^ b.sign;
+    return ans;
 }
 
 // Division
