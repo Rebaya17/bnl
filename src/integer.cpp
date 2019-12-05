@@ -386,12 +386,98 @@ const bnl::integer operator >> (const bnl::integer &a, const bnl::integer &b) {
 
 // Greater than
 bool operator > (const bnl::integer &a, const bnl::integer &b) {
+    // Same object
+    if (&a == &b)
+        return false;
 
+    // Zeros
+    const bool a_is_zero = bnl::iszero(a);
+    const bool b_is_zero = bnl::iszero(b);
+
+    if (a_is_zero && b_is_zero)
+        return false;
+
+    if (a_is_zero)
+        return b.sign;
+
+    if (b_is_zero)
+        return !a.sign;
+
+
+    // Different signs
+    if (!a.sign && b.sign)
+        return true;
+
+    if (a.sign && !b.sign)
+        return false;
+
+
+    // Positive signs
+    if (!a.sign) {
+        // Check sizes
+        if (a.size != b.size)
+            return a.size > b.size;
+
+        // Full comparison
+        return bnl::integer::cmp(a, b) == 1;
+    }
+
+    // Negative signs
+
+    // Check sizes
+    if (a.size != b.size)
+        return a.size < b.size;
+
+    // Full comparison
+    return bnl::integer::cmp(a, b) == -1;
 }
 
 // Less than
 bool operator < (const bnl::integer &a, const bnl::integer &b) {
+    // Same object
+    if (&a == &b)
+        return false;
 
+    // Zeros
+    const bool a_is_zero = bnl::iszero(a);
+    const bool b_is_zero = bnl::iszero(b);
+
+    if (a_is_zero && b_is_zero)
+        return false;
+
+    if (a_is_zero)
+        return !b.sign;
+
+    if (b_is_zero)
+        return a.sign;
+
+
+    // Different signs
+    if (!a.sign && b.sign)
+        return false;
+
+    if (a.sign && !b.sign)
+        return true;
+
+
+    // Positive signs
+    if (!a.sign) {
+        // Check sizes
+        if (a.size != b.size)
+            return a.size < b.size;
+
+        // Full comparison
+        return bnl::integer::cmp(a, b) == -1;
+    }
+
+    // Negative signs
+
+    // Check sizes
+    if (a.size != b.size)
+        return a.size > b.size;
+
+    // Full comparison
+    return bnl::integer::cmp(a, b) == 1;
 }
 
 

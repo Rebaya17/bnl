@@ -511,7 +511,7 @@ inline bool operator == (const bnl::integer &a, const bnl::integer &b) {
         return false;
 
     // Full comparison
-    return bnl::integer::cmp(a, b) == 0;
+    return !bnl::integer::cmp(a, b);
 }
 
 inline bool operator != (const bnl::integer &a, const bnl::integer &b) {
