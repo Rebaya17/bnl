@@ -219,8 +219,6 @@ bnl::integer::integer(const std::string &str) : data(NULL), size(0), sign(false)
 
 
     // Shrink the numeric data
-    size += 4;
-    size -= 4;
     shrink();
 }
 
@@ -855,7 +853,183 @@ const bnl::integer operator & (const bnl::integer &a, const bnl::integer &b) {
 
 // Bitwise OR (inclusive or)
 const bnl::integer operator | (const bnl::integer &a, const bnl::integer &b) {
+    // Zeros
+    if (bnl::iszero(a))
+        return b;
 
+    if (bnl::iszero(b))
+        return a;
+
+
+    // Netative ones
+    if (bnl::isone(a) && a.sign)
+        return a;
+
+    if (bnl::isone(b) && b.sign)
+        return b;
+
+
+    // Operands and answer variables
+    const bnl::integer &m = a.size >= b.size ? a : b;
+    const bnl::integer &n = &m == &a ? b : a;
+    bnl::integer ans(m.size, m.sign || n.sign);
+
+    // Auxiliar variables
+    std::size_t i = 0;
+
+
+    // Positive signs
+    if (!m.sign && !n.sign) {
+        // OR main bucle
+        while(i < n.size) {
+            ans.data[i] = m.data[i] | n.data[i];
+            i++;
+        }
+
+        // Extra digits bucle
+        while (i < m.size) {
+            ans.data[i] = m.data[i];
+            i++;
+        }
+    }
+
+    // Only m nevative
+    else if (m.sign && !n.sign) {
+        // Carry
+        bnl::ulint carry_m = 1;
+        bnl::ulint carry_ans = 1;
+
+        // OR main bucle
+        while(i < n.size) {
+            // Two's complement of m
+            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mod) + carry_m;
+
+            // Reset carry
+            if (carry_m)
+                carry_m = 0;
+
+            // Check carry
+            if (mc2 >= bnl::integer::base) {
+                carry_m = 1;
+                mc2 -= bnl::integer::base;
+            }
+
+            // Two's complement of the OR operation
+            ans.data[i] = ((mc2 | n.data[i]) ^ bnl::integer::base_mod) + carry_ans;
+
+            // Reset carry
+            if (carry_ans)
+                carry_ans = 0;
+
+            // Check carry
+            if (ans.data[i] >= bnl::integer::base) {
+                carry_ans = 1;
+                ans.data[i] -= bnl::integer::base;
+            }
+
+            // Block increment
+            i++;
+        }
+
+        // Extra digits bucle
+        while (i < m.size) {
+            ans.data[i] = m.data[i];
+            i++;
+        }
+    }
+
+    // Only n negative
+    else if (!m.sign && n.sign) {
+        // Carry
+        bnl::ulint carry_n = 1;
+        bnl::ulint carry_ans = 1;
+
+        // OR main bucle
+        while(i < n.size) {
+            // Two's complement of n
+            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mod) + carry_n;
+
+            // Reset carry
+            if (carry_n)
+                carry_n = 0;
+
+            // Check carry
+            if (nc2 >= bnl::integer::base) {
+                carry_n = 1;
+                nc2 -= bnl::integer::base;
+            }
+
+            // Two's complement of the OR operation
+            ans.data[i] = ((m.data[i] | nc2) ^ bnl::integer::base_mod) + carry_ans;
+
+            // Reset carry
+            if (carry_ans)
+                carry_ans = 0;
+
+            // Check carry
+            if (ans.data[i] >= bnl::integer::base) {
+                carry_ans = 1;
+                ans.data[i] -= bnl::integer::base;
+            }
+
+            // Block increment
+            i++;
+        }
+    }
+
+    // Negative signs
+    else {
+        // Carry
+        bnl::ulint carry_m = 1;
+        bnl::ulint carry_n = 1;
+        bnl::ulint carry_ans = 1;
+
+        // OR main bucle
+        while(i < n.size) {
+            // Two's complements
+            bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mod) + carry_m;
+            bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mod) + carry_n;
+
+            // Reset carries
+            if (carry_m)
+                carry_m = 0;
+
+            if (carry_n)
+                carry_n = 0;
+
+            // Check carry
+            if (mc2 >= bnl::integer::base) {
+                carry_m = 1;
+                mc2 -= bnl::integer::base;
+            }
+
+            if (nc2 >= bnl::integer::base) {
+                carry_n = 1;
+                nc2 -= bnl::integer::base;
+            }
+
+            // Two's complement of the AND operation
+            ans.data[i] = ((mc2 | nc2) ^ bnl::integer::base_mod) + carry_ans;
+
+            // Reset carry
+            if (carry_ans)
+                carry_ans = 0;
+
+            // Check carry
+            if (ans.data[i] >= bnl::integer::base) {
+                carry_ans = 1;
+                ans.data[i] -= bnl::integer::base;
+            }
+
+            // Block increment
+            i++;
+        }
+    }
+
+
+    // Shrink the answer and return it
+    ans.shrink();
+    return ans;
 }
 
 // Bitwise XOR (exclusive or)
