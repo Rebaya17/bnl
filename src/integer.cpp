@@ -387,15 +387,14 @@ const bnl::integer operator * (const bnl::integer &a, const bnl::integer &b) {
             // Multiply
             prod.data[j] = m.data[k] * block + carry;
 
-            // Reset the carry
-            if (carry)
-                carry = 0;
-
             // Check carry
             if (prod.data[j] >= bnl::integer::base) {
                 carry = prod.data[j] / bnl::integer::base;
                 prod.data[j] &= bnl::integer::base_mask;
             }
+
+            // Reset the carry
+            else carry = 0;
         }
 
         // Carry
@@ -458,15 +457,14 @@ const bnl::integer operator + (const bnl::integer &a, const bnl::integer &b) {
         // Add
         ans.data[i] = m.data[i] + n.data[i] + carry;
 
-        // Reset the carry
-        if (carry)
-            carry = 0;
-
         // Check carry
         if (ans.data[i] >= bnl::integer::base) {
             carry = 1;
             ans.data[i] -= bnl::integer::base;
         }
+
+        // Reset the carry
+        else carry = 0;
 
         // Index increment
         i++;
@@ -477,15 +475,14 @@ const bnl::integer operator + (const bnl::integer &a, const bnl::integer &b) {
         // Add
         ans.data[i] = m.data[i] + carry;
 
-        // Reset the carry
-        if (carry)
-            carry = 0;
-
         // Check carry
         if (ans.data[i] >= bnl::integer::base) {
             carry = 1;
             ans.data[i] -= bnl::integer::base;
         }
+
+        // Reset the carry
+        else carry = 0;
 
         // Index increment
         i++;
@@ -530,15 +527,14 @@ const bnl::integer operator - (const bnl::integer &a, const bnl::integer &b) {
         // Subtract
         ans.data[i] = m.data[i] - n.data[i] - carry;
 
-        // Reset the carry
-        if (carry)
-            carry = 0;
-
         // Check carry
         if (ans.data[i] >= bnl::integer::base) {
             carry = 1;
             ans.data[i] += bnl::integer::base;
         }
+
+        // Reset the carry
+        else carry = 0;
 
         // Index increment
         i++;
@@ -549,15 +545,14 @@ const bnl::integer operator - (const bnl::integer &a, const bnl::integer &b) {
         // Subtract
         ans.data[i] = m.data[i] - carry;
 
-        // Reset the carry
-        if (carry)
-            carry = 0;
-
         // Check carry
         if (ans.data[i] >= bnl::integer::base) {
             carry = 1;
             ans.data[i] += bnl::integer::base;
         }
+
+        // Reset the carry
+        else carry = 0;
 
         // Index increment
         i++;
@@ -626,7 +621,106 @@ const bnl::integer operator << (const bnl::integer &a, const bnl::integer &b) {
 
 // Right shift
 const bnl::integer operator >> (const bnl::integer &a, const bnl::integer &b) {
+    // Zeros
+    if (bnl::iszero(a) || bnl::iszero(b))
+        return a;
 
+    // Negative shift count
+    if (b.sign)
+        return a << -b;
+
+
+    // Block shift
+    const std::size_t block_shift = static_cast<std::size_t>(b.size > 1 ? (b.data[1] << 5) | (b.data[0] >> 5) : b.data[0] >> 5);
+
+    // Check underflow
+    if (block_shift >= a.size)
+        return bnl::integer::zero;
+
+    // Bit shift and answer variables
+    const std::size_t shift_r = static_cast<std::size_t>(b.data[0] & 31);
+    const std::size_t shift_l = 32 - shift_r;
+    const bnl::ulint offset_mask = (1 << shift_r) - 1;
+    bnl::integer ans(a.size - block_shift, a.sign);
+
+
+    // Positive sign
+    if (!a.sign) {
+        // Offset
+        bnl::ulint offset = 0;
+
+        // Right shift main bucle
+        for (std::size_t i = ans.size - 1, j = a.size - 1; i < ans.size; i--, j--) {
+            ans.data[i] = (offset << shift_l) | (a.data[j] >> shift_r);
+            offset = a.data[j] & offset_mask;
+        }
+    }
+
+    // Negative sign
+    else {
+        // Carries
+        bnl::ulint carry = 1;
+        bnl::ulint carry_ans = 1;
+
+        // First block
+        bnl::ulint block = (a.data[0] ^ bnl::integer::base_mask) + carry;
+
+        // Check carry
+        if (block >= bnl::integer::base_mask) {
+            carry = 1;
+            block -= bnl::integer::base_mask;
+        }
+
+        // Reset the carry
+        else carry = 0;
+
+        // Offset
+        bnl::ulint offset = block >> shift_r;
+
+        // Right shift main bucle
+        for (std::size_t i = 0, j = block_shift + 1; j < a.size; i++, j++) {
+            // Two's complement
+            block = (a.data[j] ^ bnl::integer::base_mask) + carry;
+
+            // Check carry
+            if (block >= bnl::integer::base_mask) {
+                carry = 1;
+                block -= bnl::integer::base_mask;
+            }
+
+            // Reset the carry
+            else carry = 0;
+
+            // Two's complement of the right shiftment
+            ans.data[i] = ((((block & offset_mask) << shift_l) | offset) ^ bnl::integer::base_mask) + carry_ans;
+
+            // Check carry
+            if (ans.data[i] >= bnl::integer::base_mask) {
+                carry_ans = 1;
+                ans.data[i] -= bnl::integer::base_mask;
+            }
+
+            // Reset the carry
+            else carry_ans = 0;
+
+            // Offset
+            offset = block >> shift_r;
+        }
+
+        // Fill the last block and two's complement
+        ans.data[ans.size - 1] = (((offset_mask << shift_l) | offset) ^ bnl::integer::base_mask) + carry_ans;
+
+        // Check carry
+        if (ans.data[ans.size - 1] >= bnl::integer::base_mask) {
+            carry_ans = 1;
+            ans.data[ans.size - 1] -= bnl::integer::base_mask;
+        }
+    }
+
+
+    // Shrink and return the answer
+    ans.shrink();
+    return ans;
 }
 
 
@@ -774,15 +868,14 @@ const bnl::integer operator & (const bnl::integer &a, const bnl::integer &b) {
             // Two's complement of m
             bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry;
 
-            // Reset carry
-            if (carry)
-                carry = 0;
-
             // Check carry
             if (mc2 >= bnl::integer::base) {
                 carry = 1;
                 mc2 -= bnl::integer::base;
             }
+
+            // Reset the carry
+            else carry = 0;
 
             // Apply the AND operation
             ans.data[i] = mc2 & n.data[i];
@@ -800,15 +893,14 @@ const bnl::integer operator & (const bnl::integer &a, const bnl::integer &b) {
             // Two's complement of n
             bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry;
 
-            // Reset carry
-            if (carry)
-                carry = 0;
-
             // Check carry
             if (nc2 >= bnl::integer::base) {
                 carry = 1;
                 nc2 -= bnl::integer::base;
             }
+
+            // Reset the carry
+            else carry = 0;
 
             // Apply the AND operation
             ans.data[i] = m.data[i] & nc2;
@@ -835,36 +927,35 @@ const bnl::integer operator & (const bnl::integer &a, const bnl::integer &b) {
             bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
             bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry_n;
 
-            // Reset carries
-            if (carry_m)
-                carry_m = 0;
-
-            if (carry_n)
-                carry_n = 0;
-
             // Check carry
             if (mc2 >= bnl::integer::base) {
                 carry_m = 1;
                 mc2 -= bnl::integer::base;
             }
 
+            // Reset the carry
+            else carry_m = 0;
+
+            // Check carry
             if (nc2 >= bnl::integer::base) {
                 carry_n = 1;
                 nc2 -= bnl::integer::base;
             }
 
+            // Reset the carry
+            else carry_n = 0;
+
             // Two's complement of the AND operation
             ans.data[i] = ((mc2 & nc2) ^ bnl::integer::base_mask) + carry_ans;
-
-            // Reset carry
-            if (carry_ans)
-                carry_ans = 0;
 
             // Check carry
             if (ans.data[i] >= bnl::integer::base) {
                 carry_ans = 1;
                 ans.data[i] -= bnl::integer::base;
             }
+
+            // Reset the carry
+            else carry_ans = 0;
 
             // Block increment
             i++;
@@ -875,28 +966,26 @@ const bnl::integer operator & (const bnl::integer &a, const bnl::integer &b) {
             // Two's complement of m
             ans.data[i] = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
 
-            // Reset the carry
-            if (carry_m)
-                carry_m = 0;
-
             // Check carry
             if (ans.data[i] >= bnl::integer::base) {
                 carry_m = 1;
                 ans.data[i] -= bnl::integer::base;
             }
 
+            // Reset the carry
+            else carry_m = 0;
+
             // Two's complement of answer
             ans.data[i] = (ans.data[i] ^ bnl::integer::base_mask) + carry_ans;
-
-            // Reset the carry
-            if (carry_ans)
-                carry_ans = 0;
 
             // Check carry
             if (ans.data[i] >= bnl::integer::base) {
                 carry_ans = 1;
                 ans.data[i] -= bnl::integer::base;
             }
+
+            // Reset the carry
+            else carry_ans = 0;
 
             // Block increment
             i++;
@@ -962,28 +1051,26 @@ const bnl::integer operator | (const bnl::integer &a, const bnl::integer &b) {
             // Two's complement of m
             bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
 
-            // Reset carry
-            if (carry_m)
-                carry_m = 0;
-
             // Check carry
             if (mc2 >= bnl::integer::base) {
                 carry_m = 1;
                 mc2 -= bnl::integer::base;
             }
 
+            // Reset the carry
+            else carry_m = 0;
+
             // Two's complement of the OR operation
             ans.data[i] = ((mc2 | n.data[i]) ^ bnl::integer::base_mask) + carry_ans;
-
-            // Reset carry
-            if (carry_ans)
-                carry_ans = 0;
 
             // Check carry
             if (ans.data[i] >= bnl::integer::base) {
                 carry_ans = 1;
                 ans.data[i] -= bnl::integer::base;
             }
+
+            // Reset the carry
+            else carry_ans = 0;
 
             // Block increment
             i++;
@@ -1007,28 +1094,26 @@ const bnl::integer operator | (const bnl::integer &a, const bnl::integer &b) {
             // Two's complement of n
             bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry_n;
 
-            // Reset carry
-            if (carry_n)
-                carry_n = 0;
-
             // Check carry
             if (nc2 >= bnl::integer::base) {
                 carry_n = 1;
                 nc2 -= bnl::integer::base;
             }
 
+            // Reset the carry
+            else carry_n = 0;
+
             // Two's complement of the OR operation
             ans.data[i] = ((m.data[i] | nc2) ^ bnl::integer::base_mask) + carry_ans;
-
-            // Reset carry
-            if (carry_ans)
-                carry_ans = 0;
 
             // Check carry
             if (ans.data[i] >= bnl::integer::base) {
                 carry_ans = 1;
                 ans.data[i] -= bnl::integer::base;
             }
+
+            // Reset the carry
+            else carry_ans = 0;
 
             // Block increment
             i++;
@@ -1048,36 +1133,35 @@ const bnl::integer operator | (const bnl::integer &a, const bnl::integer &b) {
             bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
             bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry_n;
 
-            // Reset carries
-            if (carry_m)
-                carry_m = 0;
-
-            if (carry_n)
-                carry_n = 0;
-
             // Check carry
             if (mc2 >= bnl::integer::base) {
                 carry_m = 1;
                 mc2 -= bnl::integer::base;
             }
 
+            // Reset the carry
+            else carry_m = 0;
+
+            // Check carry
             if (nc2 >= bnl::integer::base) {
                 carry_n = 1;
                 nc2 -= bnl::integer::base;
             }
 
+            // Reset the carry
+            else carry_n = 0;
+
             // Two's complement of the AND operation
             ans.data[i] = ((mc2 | nc2) ^ bnl::integer::base_mask) + carry_ans;
-
-            // Reset carry
-            if (carry_ans)
-                carry_ans = 0;
 
             // Check carry
             if (ans.data[i] >= bnl::integer::base) {
                 carry_ans = 1;
                 ans.data[i] -= bnl::integer::base;
             }
+
+            // Reset the carry
+            else carry_ans = 0;
 
             // Block increment
             i++;
@@ -1143,28 +1227,26 @@ const bnl::integer operator ^ (const bnl::integer &a, const bnl::integer &b) {
             // Two's complement of m
             bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
 
-            // Reset carry
-            if (carry_m)
-                carry_m = 0;
-
             // Check carry
             if (mc2 >= bnl::integer::base) {
                 carry_m = 1;
                 mc2 -= bnl::integer::base;
             }
 
+            // Reset the carry
+            else carry_m = 0;
+
             // Two's complement of the XOR operation
             ans.data[i] = ((mc2 ^ n.data[i]) ^ bnl::integer::base_mask) + carry_ans;
-
-            // Reset carry
-            if (carry_ans)
-                carry_ans = 0;
 
             // Check carry
             if (ans.data[i] >= bnl::integer::base) {
                 carry_ans = 1;
                 ans.data[i] -= bnl::integer::base;
             }
+
+            // Reset the carry
+            else carry_ans = 0;
 
             // Block increment
             i++;
@@ -1175,28 +1257,26 @@ const bnl::integer operator ^ (const bnl::integer &a, const bnl::integer &b) {
             // Two's complement of m
             ans.data[i] = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
 
-            // Reset the carry
-            if (carry_m)
-                carry_m = 0;
-
             // Check carry
             if (ans.data[i] >= bnl::integer::base) {
                 carry_m = 1;
                 ans.data[i] -= bnl::integer::base;
             }
 
+            // Reset the carry
+            else carry_m = 0;
+
             // Two's complement of answer
             ans.data[i] = (ans.data[i] ^ bnl::integer::base_mask) + carry_ans;
-
-            // Reset the carry
-            if (carry_ans)
-                carry_ans = 0;
 
             // Check carry
             if (ans.data[i] >= bnl::integer::base) {
                 carry_ans = 1;
                 ans.data[i] -= bnl::integer::base;
             }
+
+            // Reset the carry
+            else carry_ans = 0;
 
             // Block increment
             i++;
@@ -1214,28 +1294,26 @@ const bnl::integer operator ^ (const bnl::integer &a, const bnl::integer &b) {
             // Two's complement of n
             bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry_n;
 
-            // Reset carry
-            if (carry_n)
-                carry_n = 0;
-
             // Check carry
             if (nc2 >= bnl::integer::base) {
                 carry_n = 1;
                 nc2 -= bnl::integer::base;
             }
 
+            // Reset the carry
+            else carry_n = 0;
+
             // Two's complement of the XOR operation
             ans.data[i] = ((m.data[i] ^ nc2) ^ bnl::integer::base_mask) + carry_ans;
-
-            // Reset carry
-            if (carry_ans)
-                carry_ans = 0;
 
             // Check carry
             if (ans.data[i] >= bnl::integer::base) {
                 carry_ans = 1;
                 ans.data[i] -= bnl::integer::base;
             }
+
+            // Reset the carry
+            else carry_ans = 0;
 
             // Block increment
             i++;
@@ -1260,23 +1338,23 @@ const bnl::integer operator ^ (const bnl::integer &a, const bnl::integer &b) {
             bnl::ulint mc2 = (m.data[i] ^ bnl::integer::base_mask) + carry_m;
             bnl::ulint nc2 = (n.data[i] ^ bnl::integer::base_mask) + carry_n;
 
-            // Reset carries
-            if (carry_m)
-                carry_m = 0;
-
-            if (carry_n)
-                carry_n = 0;
-
             // Check carry
             if (mc2 >= bnl::integer::base) {
                 carry_m = 1;
                 mc2 -= bnl::integer::base;
             }
 
+            // Reset the carry
+            else carry_m = 0;
+
+            // Check carry
             if (nc2 >= bnl::integer::base) {
                 carry_n = 1;
                 nc2 -= bnl::integer::base;
             }
+
+            // Reset the carry
+            else carry_n = 0;
 
             // XOR operation
             ans.data[i] = mc2 ^ nc2;
