@@ -286,7 +286,7 @@ const std::string bnl::str(const bnl::integer &n, const int &radix) {
         bnl::uchar bit_r = (n.data[i >> 5] & (1 << (i & bit_mask))) > 0;
 
         // Shift each block
-        for (bnl::uchar j = digits_top; j < digits; j--) {
+        for (std::size_t j = digits_top; j < digits; j--) {
             // Block
             bnl::uchar &block = bcd[j];
 

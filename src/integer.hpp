@@ -490,15 +490,28 @@ namespace bnl {
     }
 
     inline const bnl::integer pow(const bnl::integer &a, const bnl::integer &b) {
+        // Square exponent constant
+        static const bnl::integer two("2");
+
+
         // Base case
-        bnl::integer ans = bnl::integer::one;
+        if (bnl::iszero(b))
+            return bnl::integer::one;
 
-        // Accumulate products
-        for (bnl::integer i = bnl::integer::zero; i < b; i++)
-            ans *= a;
 
-        // Return the power
-        return ans;
+        // Odd exponent
+        if (bnl::isodd(b))
+            return a * bnl::pow(a, b - bnl::integer::one);
+
+        // Even exponent
+        else {
+            // Square exponent
+            if ((b.size == 1) && (b.data[0] == 2))
+                return a * a;
+
+            // Recursive call
+            return bnl::pow(bnl::pow(a, b >> bnl::integer::one), two);
+        }
     }
 }
 
