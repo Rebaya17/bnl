@@ -57,8 +57,8 @@ namespace bnl {
 
     // Helpful arithmetic functions
     const bnl::integer abs(const bnl::integer &n);
-    const bnl::integer max(const bnl::integer &a, const bnl::integer &b);
-    const bnl::integer min(const bnl::integer &a, const bnl::integer &b);
+    const bnl::integer &max(const bnl::integer &a, const bnl::integer &b);
+    const bnl::integer &min(const bnl::integer &a, const bnl::integer &b);
     const bnl::integer pow(const bnl::integer &a, const bnl::integer &b);
 
     // Other helpful functions
@@ -80,73 +80,37 @@ namespace bnl {
             bool sign;
 
 
-            // Static inline functions
+            // Static methods
 
             // Compare and returns -1 if a < b, 0 if a == b, and 1 if a > b
-            static inline int cmp(const bnl::integer &a, const bnl::integer &b) {
-                // Compare each data block from the most significative to the
-                // least significative
-                for (std::size_t i = a.size - 1; i < a.size; i--)
-                    if (a.data[i] != b.data[i])
-                        // Returns 1 if a < b, or -1 if a > b
-                        return a.data[i] < b.data[i] ? -1 : 1;
-
-                // Return 0 if the numbers are equal
-                return 0;
-            }
+            static int cmp(const bnl::integer &a, const bnl::integer &b);
 
             // Copy n data blocks of numeric data from source to destiny
-            static inline void cpy(bnl::ulint *const dest, const bnl::ulint *const src, const std::size_t &n) {
-                // Copy each data block
-                for (std::size_t i = 0; i < n; i++)
-                    dest[i] = src[i];
-            }
+            static void cpy(bnl::ulint *const dest, const bnl::ulint *const src, const std::size_t &n);
 
             // Returns whether the given character if the point character
-            static inline bool isexp(const char &c) {
-                return (c == 'e') || (c == 'E');
-            }
+            static bool isexp(const char &c);
 
             // Returns whether the given character if the point character
-            static inline bool isdigit(const char &c) {
-                return (c >= '0') && (c <= '9');
-            }
+            static bool isdigit(const char &c);
 
             // Returns whether the given character if the point character
-            static inline bool ispoint(const char &c) {
-                return c == '.';
-            }
+            static bool ispoint(const char &c);
 
             // Returns whether the given character if a sign character
-            static inline bool issign(const char &c) {
-                return (c == '-') || (c == '+');
-            }
+            static bool issign(const char &c);
 
 
             // Constructors
 
             // Empty integer
-            inline integer(const std::size_t &size, const bool &sign) : data(NULL), size(size), sign(sign) {
-                // Check size
-                if (!size)
-                    throw std::invalid_argument("can't build bnl::integer from private constructor: invalid size");
-
-                // Reserve empty memory
-                data = static_cast<bnl::ulint *>(std::calloc(size, bnl::ulint_size));
-            }
+            integer(const std::size_t &size, const bool &sign);
 
 
             // Methods
 
             // Shrink numeric data
-            inline void shrink() {
-                // Update size
-                for (std::size_t i = size - 1; i && !data[i]; i--)
-                    size--;
-
-                // Resize the numeric data
-                data = static_cast<bnl::ulint *>(std::realloc(data, size * bnl::ulint_size));
-            }
+            void shrink();
 
 
 
@@ -175,20 +139,16 @@ namespace bnl {
             // Constructors
 
             // Default constructor
-            inline integer() : data(static_cast<bnl::ulint *>(std::calloc(1, bnl::ulint_size))), size(1), sign(false) {}
+            integer();
 
             // Copy constructor
-            inline integer(const bnl::integer &n) : data(static_cast<bnl::ulint *>(std::malloc(n.size * bnl::ulint_size))), size(n.size), sign(n.sign) {
-                bnl::integer::cpy(data, n.data, size);
-            }
+            integer(const bnl::integer &n);
 
             // Constructor from std::string
             integer(const std::string &str);
 
             // Constructor from const char *
-            inline integer(const char *const str) : data(NULL), size(0), sign(false) {
-                *this = bnl::integer(std::string(str));
-            }
+            integer(const char *const str);
 
             // Constructor from long double
             integer(const bnl::ldouble &n);
@@ -219,10 +179,10 @@ namespace bnl {
             friend const bnl::integer abs(const bnl::integer &n);
 
             // Returns largest number between two numbers
-            friend const bnl::integer max(const bnl::integer &a, const bnl::integer &b);
+            friend const bnl::integer &max(const bnl::integer &a, const bnl::integer &b);
 
             // Returns smaller number between two numbers
-            friend const bnl::integer min(const bnl::integer &a, const bnl::integer &b);
+            friend const bnl::integer &min(const bnl::integer &a, const bnl::integer &b);
 
             // Returns the given number raised to the given exponent
             friend const bnl::integer pow(const bnl::integer &a, const bnl::integer &b);
@@ -243,18 +203,10 @@ namespace bnl {
             // Increment and decrement operators
 
             // Postfix increment
-            inline const bnl::integer operator ++ (int) {
-                bnl::integer ans = *this;
-                *this = *this + bnl::integer::one;
-                return ans;
-            }
+            const bnl::integer operator ++ (int);
 
             // Postfix decrement
-            inline const bnl::integer operator -- (int) {
-                bnl::integer ans = *this;
-                *this = *this - bnl::integer::one;
-                return ans;
-            }
+            const bnl::integer operator -- (int);
 
             // Prefix increment
             inline const bnl::integer &operator ++ () {
@@ -275,16 +227,7 @@ namespace bnl {
             }
 
             // Additive inverse
-            inline const bnl::integer operator - () const {
-                // Return the same number if is zero
-                if (bnl::iszero(*this))
-                    return *this;
-
-                // Return copy with inversed sign
-                bnl::integer ans = *this;
-                ans.sign = !ans.sign;
-                return ans;
-            }
+            const bnl::integer operator - () const;
 
             // Logical NOT
             inline const bnl::integer operator ! () const {
@@ -375,24 +318,13 @@ namespace bnl {
             // Assignment operators
 
             // Direct assignation
-            inline bnl::integer &operator = (const bnl::integer &n) {
-                // Copy attributes if is not the same number
-                if ((this != &n) && (*this != n)) {
-                    size = n.size;
-                    sign = n.sign;
-                    data = static_cast<bnl::ulint *>(std::realloc(data, size * bnl::ulint_size));
-                    bnl::integer::cpy(data, n.data, size);
-                }
-
-                // Return the number
-                return *this;
-            }
+            bnl::integer &operator = (const bnl::integer &n);
 
             // Assignation by addition
             inline bnl::integer &operator += (const bnl::integer &n) {
                 return *this = *this + n;
             }
-            
+
             // Assignation by subtraction
             inline bnl::integer &operator -= (const bnl::integer &n) {
                 return *this = *this - n;
@@ -481,55 +413,13 @@ namespace bnl {
         return n.sign ? -n : n;
     }
 
-    inline const bnl::integer max(const bnl::integer &a, const bnl::integer &b) {
-        return bnl::integer::cmp(a, b) == 1 ? b : a;
+    inline const bnl::integer &max(const bnl::integer &a, const bnl::integer &b) {
+        return a > b ? a : b;
     }
 
-    inline const bnl::integer min(const bnl::integer &a, const bnl::integer &b) {
-        return bnl::integer::cmp(a, b) == 1 ? a : b;
+    inline const bnl::integer &min(const bnl::integer &a, const bnl::integer &b) {
+        return a < b ? a : b;
     }
-
-    inline const bnl::integer pow(const bnl::integer &a, const bnl::integer &b) {
-        // Square exponent constant
-        static const bnl::integer two("2");
-
-
-        // Base case
-        if (bnl::iszero(b))
-            return bnl::integer::one;
-
-
-        // Odd exponent
-        if (bnl::isodd(b))
-            return a * bnl::pow(a, b - bnl::integer::one);
-
-        // Even exponent
-        else {
-            // Square exponent
-            if ((b.size == 1) && (b.data[0] == 2))
-                return a * a;
-
-            // Recursive call
-            return bnl::pow(bnl::pow(a, b >> bnl::integer::one), two);
-        }
-    }
-}
-
-
-// Input and output
-inline std::ostream &operator << (std::ostream &stream, const bnl::integer &n) {
-    stream << std::string(n);
-    return stream;
-}
-
-inline std::istream &operator >> (std::istream &stream, bnl::integer &n) {
-    // Read the integer
-    std::string str;
-    stream >> str;
-    n = str;
-
-    // Return the stream
-    return stream;
 }
 
 
@@ -540,19 +430,6 @@ inline bool operator >= (const bnl::integer &a, const bnl::integer &b) {
 
 inline bool operator <= (const bnl::integer &a, const bnl::integer &b) {
     return !(a > b);
-}
-
-inline bool operator == (const bnl::integer &a, const bnl::integer &b) {
-    // Same object
-    if (&a == &b)
-        return true;
-
-    // Different signs
-    if ((a.sign != b.sign) || (a.size != b.size))
-        return false;
-
-    // Full comparison
-    return !bnl::integer::cmp(a, b);
 }
 
 inline bool operator != (const bnl::integer &a, const bnl::integer &b) {
