@@ -571,7 +571,57 @@ const bnl::integer operator - (const bnl::integer &a, const bnl::integer &b) {
 
 // Left shift
 const bnl::integer operator << (const bnl::integer &a, const bnl::integer &b) {
+    // Zeros
+    if (bnl::iszero(a) || bnl::iszero(b))
+        return a;
 
+    // Negative shift count
+    if (b.sign)
+        return a >> -b;
+
+
+    // Memory limits constants
+    static const std::size_t mem_bits = sizeof(void *) << 3;
+    static const std::size_t max_blocks = static_cast<std::size_t>(-1) / mem_bits;
+    static const std::invalid_argument memory_limit_exception = std::invalid_argument("can't shift left: exceeds theoretical memory limits");
+
+
+    // Block shift
+    const std::size_t block_shift = static_cast<std::size_t>(b.size > 1 ? (b.data[1] << 5) | (b.data[0] >> 5) : b.data[0] >> 5);
+
+    // Check memory limits
+    if (((b.size >= 2) && (b.data[1] >> 5)) || (max_blocks - block_shift < a.size))
+        throw memory_limit_exception;
+
+    // Bit shift and answer variables
+    const std::size_t shift_l = static_cast<std::size_t>(b.data[0] & 31);
+    const std::size_t shift_r = 32 - shift_l;
+    bnl::ulint offset = 0;
+    bnl::integer ans(block_shift + a.size, a.sign);
+
+
+    // Left shift main bucle
+    for (std::size_t i = block_shift, j = 0; j < a.size; i++, j++) {
+        ans.data[i] = (offset >> shift_r) | (a.data[j] << shift_l);
+        offset = a.data[j];
+    }
+
+    // Left overflow
+    offset = a.data[a.size - 1] >> shift_r;
+    if (offset) {
+        // Check memory limits
+        ans.size++;
+        if (ans.size > max_blocks)
+            throw memory_limit_exception;
+
+        // Resize and append offset
+        ans.data = static_cast<bnl::ulint *>(std::realloc(ans.data, ans.size * bnl::ulint_size));
+        ans.data[ans.size - 1] = offset;
+    }
+
+
+    // Return the answer
+    return ans;
 }
 
 // Right shift

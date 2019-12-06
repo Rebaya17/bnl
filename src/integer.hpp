@@ -25,7 +25,6 @@ const bnl::integer operator >> (const bnl::integer &a, const bnl::integer &b);
 
 // Input and output
 std::ostream &operator << (std::ostream &stream, const bnl::integer &n);
-
 std::istream &operator >> (std::istream &stream, bnl::integer &n);
 
 // Comparison and relational operators
