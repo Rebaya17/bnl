@@ -7,7 +7,7 @@
 // Static constants
 
 // Numeric representation base
-const bnl::ulint bnl::integer::base = 0x0100000000;
+const bnl::ulint bnl::integer::base = static_cast<bnl::ulint>(1) << (bnl::ulint_size << 2);
 
 // Base bit mask
 const bnl::ulint bnl::integer::base_mask = bnl::integer::base - 1;
@@ -248,11 +248,8 @@ bnl::integer::integer(const bnl::ldouble &n) : data(NULL), size(0), sign(false) 
 // Get the string representation with the given radix
 const std::string bnl::str(const bnl::integer &n, const int &radix) {
     // Check the radix
-    if (radix != 10) {
-        std::stringstream stream;
-        stream << radix;
-        throw std::invalid_argument("can't convert bnl::integer to std::string: invalid radix " + stream.str());
-    }
+    if (radix != 10)
+        throw std::invalid_argument("can't convert bnl::integer to std::string: invalid radix");
 
     // Well known integers
     static const std::string zero("0");
