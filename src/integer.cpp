@@ -194,26 +194,24 @@ bnl::integer::integer(const std::string &str) : data(NULL), size(0), sign(false)
         for (std::size_t j = 0, k = bin_top; j < nibbles; j++) {
             // Shift the binary block
             if ((j & 7) < 4) {
-                bnl::uchar &block = bin[k];
-                bin_r   = block & 1;
-                block >>= 1;
-                block  |= bin_l << 7;
-                bin_l   = bin_r;
+                bin_r    = bin[k] & 1;
+                bin[k] >>= 1;
+                bin[k]  |= bin_l << 7;
+                bin_l    = bin_r;
 
                 // Binary block increment
                 k -= k & 7 ? 1 : 5;
             }
 
             // Shift the bcd block
-            bnl::uchar &block = bcd[j];
-            bcd_r   = block & 1;
-            block >>= 1;
-            block  |= bcd_l << 3;
-            bcd_l   = bcd_r;
+            bcd_r    = bcd[j] & 1;
+            bcd[j] >>= 1;
+            bcd[j]  |= bcd_l << 3;
+            bcd_l    = bcd_r;
 
             // Condition
-            if (block >= 8)
-                block -= 3;
+            if (bcd[j] >= 8)
+                bcd[j] -= 3;
         }
     }
 
