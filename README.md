@@ -53,12 +53,23 @@ simulating a 2<sup>32</sup> base representation,
 
 ### Helpful arithmetic functions
 
-| Function   | Description                                           |
-| ---------- | ----------------------------------------------------- |
-| `bnl::abs` | Returns the absolute value of a number                |
-| `bnl::max` | Returns largest number between two numbers            |
-| `bnl::min` | Returns smaller number between two numbers            |
-| `bnl::pow` | Returns the given number raised to the given exponent |
+| Function            | Description                                             |
+| ------------------- | ------------------------------------------------------- |
+| `bnl::abs`          | Returns the absolute value of a number                  |
+| `bnl::max`          | Returns largest number between two numbers              |
+| `bnl::min`          | Returns smaller number between two numbers              |
+| `bnl::pow`          | Returns the given number raised to the given exponent   |
+| `bnl::integer::div` | Returns the quotient and remainder of integer division* |
+
+*See [div_t] for more details.
+
+
+### Miscelaneous functions
+
+| Function                  | Description                                                         |
+| ------------------------- | ------------------------------------------------------------------- |
+| `bnl::integer::checkstr`  | Check if a string has a valid decimal representation and process it |
+| `bnl::integer::precision` | Returns the number presicion                                        |
 
 
 ### Constructors
@@ -161,6 +172,19 @@ The operator are listing by descending precedence order.
 | `^=`          | Assignation by bitwise XOR    |
 
 
+## The `bnl::div_t` struct
+
+Similar to `std::div_t` defined in `cmath`, represents the result value of an
+integral division performed by function `bnl::integer::div`.
+
+It has two int members: `quot` and `rem`.
+
+| Member | Description                                       |
+| ------ | ------------------------------------------------- |
+| `quot` | Represents the quotient of the integral division  |
+| `rem`  | Represents the remainder of the integral division |
+
+
 
 # Requirements and considerations
 
@@ -172,6 +196,7 @@ to the next table.
 | Data type           | Size in bytes |
 | ------------------- | ------------: |
 | `unsigned char`     |             1 |
+| `unsigned int`      |             4 |
 | `unsigned long int` |             8 |
 | `long double`       |            16 |
 
@@ -181,3 +206,4 @@ to the next table.
 [GMP]: https://gmplib.org/
 [main.cpp]: src/main.cpp
 [MIT license]: LICENSE
+[div_t]: #the-bnl::div_t-struct

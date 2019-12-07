@@ -11,6 +11,9 @@ namespace bnl {
     // Unsigned char assumed to be 1 bytes wide
     typedef unsigned char uchar;
 
+    // Unsigned long int assumed to be 4 bytes wide
+    typedef unsigned int uint;
+
     // Unsigned long int assumed to be 8 bytes wide
     typedef unsigned long int ulint;
 
@@ -22,6 +25,9 @@ namespace bnl {
 
     // Unsigned long int size
     const std::size_t uchar_size = sizeof(bnl::uchar);
+
+    // Unsigned int size
+    const std::size_t uint_size = sizeof(bnl::uint);
 
     // Unsigned long int size
     const std::size_t ulint_size = sizeof(bnl::ulint);

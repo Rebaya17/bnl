@@ -19,7 +19,7 @@ const bnl::integer bnl::integer::zero;
 const bnl::integer bnl::integer::one("1");
 
 
-// Private static inline methods
+// Private static methods
 
 // Compare and returns -1 if a < b, 0 if a == b, and 1 if a > b
 int bnl::integer::cmp(const bnl::integer &a, const bnl::integer &b) {
@@ -77,8 +77,22 @@ inline bnl::integer::integer(const std::size_t &size, const bool &sign) : data(N
 
 // Private methods
 
+// The minimum number precision
+std::size_t bnl::integer::precision() const {
+    // Reference to the leftmost block
+    const bnl::ulint &block = data[size - 1];
+
+    // For each bit
+    std::size_t position = size << 5;
+    for (bnl::ulint i = bnl::integer::base >> 1; (i < bnl::integer::base) && !(block & i); i >>= 1)
+        position--;
+
+    // Empty block
+    return position;
+}
+
 // Shrink numeric data
-inline void bnl::integer::shrink() {
+void bnl::integer::shrink() {
     // Update size
     for (std::size_t i = size - 1; i && !data[i]; i--)
         size--;
@@ -214,6 +228,127 @@ const std::string bnl::integer::checkstr(const std::string &str, bool *const sig
 
     // Return the processed number
     return num.empty() ? "0" : num;
+}
+
+// Number presicion
+std::size_t bnl::integer::precision(const bnl::integer &n) {
+    return n.sign ? n.precision() + 1 : n.precision();
+}
+
+// Integer division
+const bnl::div_t bnl::integer::div(const bnl::integer &a, const bnl::integer &b) {
+    // Zeros
+    if (bnl::iszero(a))
+        return div_t();
+
+    if (bnl::iszero(a))
+        throw std::invalid_argument("can't divide: division by zero");
+
+    // Ones
+    if (bnl::isone(b))
+        return b.sign ? div_t(-a, bnl::integer::zero) : div_t(a, bnl::integer::zero);
+
+    // Same number
+    if (a == b)
+        return div_t(bnl::integer::one, bnl::integer::zero);
+
+    // Divisor larger than dividend
+    if (b > a)
+        return div_t(bnl::integer::zero, a);
+
+
+    // Operands and answer variables
+    const std::size_t bits_diff = a.precision() - b.precision();
+    div_t ans;
+    ans.rem = a >> bits_diff;
+    ans.quot.sign = a.sign ^ b.sign;
+
+    // Bit selector and shiftments offset
+    bnl::ulint bit_shiftment = (bits_diff & 31) - 1;
+    bnl::ulint bit_selector = static_cast<bnl::ulint>(1 << bit_shiftment);
+    bnl::ulint offset;
+
+
+    // Division main loop
+    for (std::size_t i = 0, j = bits_diff >> 5; i < bits_diff; i++, bit_selector >>= 1) {
+        // Quotient shiftment
+        offset = 0;
+        for (std::size_t k = 0; k < ans.quot.size; k++) {
+            const bnl::ulint tmp = ans.quot.data[k];
+            ans.quot.data[k] = (offset >> 31) | (ans.quot.data[k] << 1);
+            offset = tmp;
+        }
+
+        // Left overflow
+        offset >>= 31;
+        if (offset) {
+            // Resize and append offset
+            ans.quot.size++;
+            ans.quot.data = static_cast<bnl::ulint *>(std::realloc(ans.quot.data, ans.quot.size * bnl::ulint_size));
+            ans.quot.data[ans.quot.size - 1] = offset;
+        }
+
+        // Subtraction
+        if (ans.rem >= b) {
+            ans.rem = ans.rem - b;
+            ans.quot.data[0] |= 1;
+        }
+
+        //Remainder shiftment
+        offset = 0;
+        for (std::size_t k = 0; k < ans.quot.size; k++) {
+            ans.rem.data[k] = (offset >> 31) | ((ans.rem.data[k] << 1) & bnl::integer::base_mask);
+            offset = ans.rem.data[k];
+        }
+
+        // Left overflow
+        offset >>= 31;
+        if (offset) {
+            // Resize and append offset
+            ans.rem.size++;
+            ans.rem.data = static_cast<bnl::ulint *>(std::realloc(ans.rem.data, ans.rem.size * bnl::ulint_size));
+            ans.rem.data[ans.rem.size - 1] = offset;
+        }
+
+        // Reset the bit selector
+        if (!bit_selector) {
+            bit_selector = bnl::integer::base >> 1;
+            j--;
+        }
+
+        // Append bit from dividend to remanider
+        const bnl::ulint bit = a.data[j] & bit_selector;
+        if (bit)
+            ans.rem.data[0] |= 1;
+    }
+
+    // Last subtraction
+
+    // Quotient shiftment
+    offset = 0;
+    for (std::size_t k = 0; k < ans.quot.size; k++) {
+        ans.quot.data[k] = (offset >> 31) | ((ans.quot.data[k] << 1) & bnl::integer::base_mask);
+        offset = ans.quot.data[k];
+    }
+
+    // Left overflow
+    offset >>= 31;
+    if (offset) {
+        // Resize and append offset
+        ans.quot.size++;
+        ans.quot.data = static_cast<bnl::ulint *>(std::realloc(ans.quot.data, ans.quot.size * bnl::ulint_size));
+        ans.quot.data[ans.quot.size - 1] = offset;
+    }
+
+    // Subtraction
+    if (ans.rem > b) {
+        ans.rem = ans.rem - b;
+        ans.quot.data[0] |= 1;
+    }
+
+
+    // Return the answer
+    return ans;
 }
 
 
@@ -552,12 +687,12 @@ const bnl::integer operator * (const bnl::integer &a, const bnl::integer &b) {
 
 // Division
 const bnl::integer operator / (const bnl::integer &a, const bnl::integer &b) {
-
+    return bnl::integer::div(a, b).quot;
 }
 
 // Modulo
 const bnl::integer operator % (const bnl::integer &a, const bnl::integer &b) {
-
+    return bnl::integer::div(a, b).rem;
 }
 
 // Addition
@@ -733,12 +868,12 @@ const bnl::integer operator << (const bnl::integer &a, const bnl::integer &b) {
 
     // Left shift main bucle
     for (std::size_t i = block_shift, j = 0; j < a.size; i++, j++) {
-        ans.data[i] = (offset >> shift_r) | (a.data[j] << shift_l);
+        ans.data[i] = (offset >> shift_r) | ((a.data[j] << shift_l) & bnl::integer::base_mask);
         offset = a.data[j];
     }
 
     // Left overflow
-    offset = a.data[a.size - 1] >> shift_r;
+    offset >>= shift_r;
     if (offset) {
         // Check memory limits
         ans.size++;
@@ -828,7 +963,7 @@ const bnl::integer operator >> (const bnl::integer &a, const bnl::integer &b) {
             else carry = 0;
 
             // Two's complement of the right shiftment
-            ans.data[i] = ((((block & offset_mask) << shift_l) | offset) ^ bnl::integer::base_mask) + carry_ans;
+            ans.data[i] = ((((block & offset_mask) << shift_l) | (offset >> shift_r)) ^ bnl::integer::base_mask) + carry_ans;
 
             // Check carry
             if (ans.data[i] >= bnl::integer::base_mask) {
@@ -840,7 +975,7 @@ const bnl::integer operator >> (const bnl::integer &a, const bnl::integer &b) {
             else carry_ans = 0;
 
             // Offset
-            offset = block >> shift_r;
+            offset = block;
         }
 
         // Fill the last block and two's complement

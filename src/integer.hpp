@@ -8,9 +8,10 @@
 #include <cstdlib> // std::malloc, std::calloc, std::realloc, std::free
 
 
-// Forward declaration of the bnl::integer class
+// Forward declaration of the bnl::integer class and bnl::div_t struct
 namespace bnl {
     class integer;
+    struct div_t;
 }
 
 
@@ -109,6 +110,9 @@ namespace bnl {
 
             // Methods
 
+            // The minimum number precision
+            std::size_t precision() const;
+
             // Shrink numeric data
             void shrink();
 
@@ -132,8 +136,14 @@ namespace bnl {
 
             // Static methods
 
-            // Check if the std::string is a valid decimal representation and process it
+            // Check if the std::string has a valid decimal representation and process it
             static const std::string checkstr(const std::string &str, bool *const sign = NULL);
+
+            // Number presicion
+            static std::size_t precision(const bnl::integer &n);
+
+            // Integer division
+            static const bnl::div_t div(const bnl::integer &a, const bnl::integer &b);
 
 
             // Constructors
@@ -380,6 +390,24 @@ namespace bnl {
                 size = 0;
                 sign = false;
             }
+    };
+
+
+    // Structure returned by bnl::integer::div
+    struct div_t {
+        // Attributes
+
+        // Quotient of the integral division
+        bnl::integer quot;
+
+        // Remainder of the integral division
+        bnl::integer rem;
+
+
+        // Constructors
+
+        // Initializator
+        div_t(const bnl::integer &q = bnl::integer::zero, const bnl::integer &r = bnl::integer::zero) : quot(q), rem(r) {}
     };
 
 
