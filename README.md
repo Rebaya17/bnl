@@ -143,7 +143,7 @@ The operator are listing by descending precedence order.
 | Operator      | Description                |
 | ------------- | -------------------------- |
 | `&`           | Bitwise AND                |
-| `|`           | Bitwise OR (inclusive or)  |
+| `\|`          | Bitwise OR (inclusive or)  |
 | `^`           | Bitwise XOR (exclusive or) |
 
 
@@ -152,7 +152,7 @@ The operator are listing by descending precedence order.
 | Operator      | Description |
 | ------------- | ----------- |
 | `&&`          | Logical AND |
-| `||`          | Logical OR  |
+| `\|\|`        | Logical OR  |
 
 
 #### Assignment operators
@@ -168,7 +168,7 @@ The operator are listing by descending precedence order.
 | `<<=`         | Assignation by left shift     |
 | `>>=`         | Assignation by right shift    |
 | `&=`          | Assignation by bitwise AND    |
-| `|=`          | Assignation by bitwise OR     |
+| `\|=`         | Assignation by bitwise OR     |
 | `^=`          | Assignation by bitwise XOR    |
 
 
