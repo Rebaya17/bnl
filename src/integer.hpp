@@ -111,7 +111,7 @@ namespace bnl {
             // Methods
 
             // The minimum number precision
-            std::size_t precision() const;
+            std::size_t precision(bool *twos_pow = NULL) const;
 
             // Shrink numeric data
             void shrink();

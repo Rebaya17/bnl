@@ -78,17 +78,35 @@ inline bnl::integer::integer(const std::size_t &size, const bool &sign) : data(N
 // Private methods
 
 // The minimum number precision
-std::size_t bnl::integer::precision() const {
+std::size_t bnl::integer::precision(bool *twos_pow) const {
     // Reference to the leftmost block
     const bnl::ulint &block = data[size - 1];
 
     // For each bit
-    std::size_t position = size << 5;
+    std::size_t bits = size << 5;
     for (bnl::ulint i = bnl::integer::base >> 1; (i < bnl::integer::base) && !(block & i); i >>= 1)
-        position--;
+        bits--;
 
-    // Empty block
-    return position;
+    // Check if is two's power
+    if (twos_pow) {
+        // Default value
+        *twos_pow = true;
+
+        // Check the last block
+        if (block & ~(1 << ((bits & 31) - 1)))
+            *twos_pow = false;
+
+        // Check the other blocks
+        const std::size_t top = size - 1;
+        for (std::size_t i = 0; (i < top) && *twos_pow; i++) {
+            // If the block has ones is not two's power
+            if (data[i])
+                *twos_pow = false;
+        }
+    }
+
+    // Return the precision
+    return bits;
 }
 
 // Shrink numeric data
@@ -257,8 +275,18 @@ const bnl::div_t bnl::integer::div(const bnl::integer &a, const bnl::integer &b)
         return div_t(bnl::integer::zero, a);
 
 
+    // Operands precision
+    bool twos_pow;
+    const std::size_t bits_a = a.precision();
+    const std::size_t bits_b = b.precision(&twos_pow);
+
+    // Shif if the divisor is two's power
+    if (twos_pow)
+        return a >> (bits_b - 1);
+
+
     // Operands and answer variables
-    const std::size_t bits_diff = a.precision() - b.precision();
+    const std::size_t bits_diff = bits_a - bits_b;
     div_t ans;
     ans.rem = a >> bits_diff;
     ans.quot.sign = a.sign ^ b.sign;
