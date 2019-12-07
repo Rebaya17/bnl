@@ -61,7 +61,7 @@ simulating a 2<sup>32</sup> base representation,
 | `bnl::pow`          | Returns the given number raised to the given exponent   |
 | `bnl::integer::div` | Returns the quotient and remainder of integer division* |
 
-*See [div_t] for more details.
+*See [`bnl::div_t`] for more details.
 
 
 ### Miscelaneous functions
@@ -206,4 +206,4 @@ to the next table.
 [GMP]: https://gmplib.org/
 [main.cpp]: src/main.cpp
 [MIT license]: LICENSE
-[div_t]: #the-bnl::div_t-struct
+[`bnl::div_t`]: #the-bnl::div_t-struct
