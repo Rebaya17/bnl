@@ -29,14 +29,18 @@ See [main.cpp] for example of use.
 
 ## The `bnl::integer` class
 
-The `bnl::integer` class provides an arbitrary precision integer
-implementation. The numerical data is stored in raw binary format by a
-self-managed dynamic array of `unsigned long int` assuming the data type is 8
-bytes wide, ordered from the least significant to the most significant data
-block.
+The `bnl::integer` class provides an arbitrary precision integer implementation.
+The numerical data is stored in raw binary format by a self-managed dynamic
+array of `unsigned long int` assuming the data type is 8 bytes wide, ordered
+from the least significant to the most significant data block. Each block of
+data can store values in the interval [0, 2<sup>32</sup>) simulating a base
+2<sup>32</sup> - 1 representation.
 
-Each block of data can store values in the interval [0, 2<sup>32</sup>)
-simulating a 2<sup>32</sup> base representation,
+The numeric data is converting from raw binary to `std::string` and from
+`std::string` to raw binary with the Double-Dabble and Reverse Double-Dabble
+algorithm respectively.
+
+All methods are own implementations and optimal performance is not guaranteed.
 
 
 ### Helpful checker functions
