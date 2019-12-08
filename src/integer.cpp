@@ -166,7 +166,7 @@ const std::string bnl::integer::checkstr(const std::string &str, bool *const sig
 
             case 1: // Sign found
                 has_sign = true;
-                if (bnl::integer::isdigit(c)) {state = 3; begin = 1;                 break;}
+                if (bnl::integer::isdigit(c)) {state = 3; begin = 1;            break;}
                 if (bnl::integer::ispoint(c)) {state = 2; begin = 2; point = 1; break;}
                 valid = false; break;
 
@@ -257,22 +257,22 @@ std::size_t bnl::integer::precision(const bnl::integer &n) {
 const bnl::div_t bnl::integer::div(const bnl::integer &a, const bnl::integer &b) {
     // Zeros
     if (bnl::iszero(a))
-        return div_t();
+        return bnl::div_t(bnl::integer::zero, bnl::integer::zero);
 
     if (bnl::iszero(a))
         throw std::invalid_argument("can't divide: division by zero");
 
     // Ones
     if (bnl::isone(b))
-        return b.sign ? div_t(-a, bnl::integer::zero) : div_t(a, bnl::integer::zero);
+        return bnl::div_t(b.sign ? -a : a, bnl::integer::zero);
 
     // Same number
     if (a == b)
-        return div_t(bnl::integer::one, bnl::integer::zero);
+        return bnl::div_t(bnl::integer::one, bnl::integer::zero);
 
     // Divisor larger than dividend
     if (b > a)
-        return div_t(bnl::integer::zero, a);
+        return bnl::div_t(bnl::integer::zero, a);
 
 
     // Operands precision
@@ -280,10 +280,32 @@ const bnl::div_t bnl::integer::div(const bnl::integer &a, const bnl::integer &b)
     const std::size_t bits_a = a.precision();
     const std::size_t bits_b = b.precision(&twos_pow);
 
-    // Shif if the divisor is two's power
-    if (twos_pow)
-        return a >> (bits_b - 1);
+    // Bitwise operations if the divisor is power of two
+    if (twos_pow) {
+        // Operators and answer variables
+        const std::size_t shiftment = bits_b - 1;
+        const std::size_t mod_mask = (bits_b << 1) - 1;
+        bnl::div_t ans;
 
+        // Positive dividend
+        if (!a.sign) {
+            ans.quot = a >> shiftment;
+            ans.rem = a & mod_mask;
+        }
+
+        // Negative dividend
+        else {
+            const bnl::integer a_pos = -a;
+            ans.quot = a_pos >> shiftment;
+            ans.rem = a_pos & mod_mask;
+        }
+
+        // Quotient sign
+        ans.quot.sign = a.sign ^ b.sign;
+
+        // Return the answer
+        return ans;
+    }
 
     // Operands and answer variables
     const std::size_t bits_diff = bits_a - bits_b;

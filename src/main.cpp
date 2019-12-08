@@ -16,7 +16,7 @@ int main() {
     std::cout << "                              " << bnl::integer(".12E2") << std::endl;
     std::cout << "                              " << bnl::integer("-.15") << std::endl;
     std::cout << "                              " << bnl::integer("345.") << std::endl;
-    std::cout << "From string constructor:      " << bnl::integer(98765.12E-3) << std::endl << std::endl;
+    std::cout << "From long double constructor: " << bnl::integer(98765.12E-3) << std::endl << std::endl;
 
     // Common operators
     bnl::integer a = "465978445001246";
