@@ -206,4 +206,4 @@ to the next table.
 [GMP]: https://gmplib.org/
 [main.cpp]: src/main.cpp
 [MIT license]: LICENSE
-[`bnl::div_t`]: #the-bnl::div_t-struct
+[`bnl::div_t`]: #the-bnldiv_t-struct

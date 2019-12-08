@@ -166,7 +166,7 @@ const std::string bnl::integer::checkstr(const std::string &str, bool *const sig
 
             case 1: // Sign found
                 has_sign = true;
-                if (bnl::integer::isdigit(c)) {state = 3; begin = 1;                 break;}
+                if (bnl::integer::isdigit(c)) {state = 3; begin = 1;            break;}
                 if (bnl::integer::ispoint(c)) {state = 2; begin = 2; point = 1; break;}
                 valid = false; break;
 
