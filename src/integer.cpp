@@ -491,12 +491,13 @@ bnl::integer::integer(const char *const str) : data(NULL), size(0), sign(false) 
 bnl::integer::integer(const bnl::ldouble &n) : data(NULL), size(0), sign(false) {
     // Check if is nan
     if (n != n)
-        throw std::invalid_argument("can't build bnl::integer from long double: is nan or -nan");
+        throw std::invalid_argument("can't build bnl::integer from long double: is +nan or -nan");
 
     // Check if is infinite positive or negative
-    static const bnl::uint inf_p = 0x7F800000;
-    static const bnl::uint inf_n = 0xFF800000;
-    if ((n >= bnl::ldouble(*reinterpret_cast<const float *>(&inf_p))) || (n <= bnl::ldouble(*reinterpret_cast<const float *>(&inf_n))))
+    static bnl::ldouble zero = 0.0;
+    static const bnl::ldouble inf_p = 1.0 / zero;
+    static const bnl::ldouble inf_n = -1.0 / zero;
+    if ((n <= inf_n) || (n >= inf_p))
         throw std::invalid_argument("can't build bnl::integer from long double: is +inf or -inf");
 
     // Cast to std::string and build bnl::integer
