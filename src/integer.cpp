@@ -289,15 +289,15 @@ const bnl::div_t bnl::integer::div(const bnl::integer &a, const bnl::integer &b)
 
         // Positive dividend
         if (!a.sign) {
-            ans.quot = a >> shiftment;
-            ans.rem = a & mod_mask;
+            ans.quot = a >> static_cast<bnl::ldouble>(shiftment);
+            ans.rem = a & static_cast<bnl::ldouble>(mod_mask);
         }
 
         // Negative dividend
         else {
             const bnl::integer a_pos = -a;
-            ans.quot = a_pos >> shiftment;
-            ans.rem = a_pos & mod_mask;
+            ans.quot = a_pos >> static_cast<bnl::ldouble>(shiftment);
+            ans.rem = a_pos & static_cast<bnl::ldouble>(mod_mask);
         }
 
         // Quotient sign
@@ -310,12 +310,12 @@ const bnl::div_t bnl::integer::div(const bnl::integer &a, const bnl::integer &b)
     // Operands and answer variables
     const std::size_t bits_diff = bits_a - bits_b;
     div_t ans;
-    ans.rem = a >> bits_diff;
+    ans.rem = a >> static_cast<bnl::ldouble>(bits_diff);
     ans.quot.sign = a.sign ^ b.sign;
 
     // Bit selector and shiftments offset
     bnl::ulint bit_shiftment = (bits_diff & 31) - 1;
-    bnl::ulint bit_selector = static_cast<bnl::ulint>(1 << bit_shiftment);
+    bnl::ulint bit_selector = static_cast<bnl::ulint>(1) << bit_shiftment;
     bnl::ulint offset;
 
 
@@ -559,33 +559,27 @@ const std::string bnl::str(const bnl::integer &n, const int &radix) {
     // Algorithm memory
     bnl::uchar *const bcd = static_cast<bnl::uchar *>(std::calloc(digits, bnl::uchar_size));
 
-    const std::size_t digits_top = digits - 1;
-    const std::size_t bits_top = bits - 1;
-
     // Algorithm auxiliar variables
-    static const std::size_t bit_mask = static_cast<std::size_t>(-1);
+    const std::size_t digits_top = digits - 1;
     bool carry = false;
 
     // Main bucle for each bit
-    for (std::size_t i = bits_top; i < bits; i--) {
+    for (std::size_t i = bits - 1; i < bits; i--) {
         bnl::uchar bit_l = 0;
-        bnl::uchar bit_r = (n.data[i >> 5] & (1 << (i & bit_mask))) > 0;
+        bnl::uchar bit_r = (n.data[i >> 5] & (static_cast<bnl::ulint>(1) << (i & 31))) > 0;
 
         // Shift each block
         for (std::size_t j = digits_top; j < digits; j--) {
-            // Block
-            bnl::uchar &block = bcd[j];
-
             // Condition
-            if (block >= 5)
-                block += 3;
+            if (bcd[j] >= 5)
+                bcd[j] += 3;
 
             // Shift BCD
-            bit_l   = block >> 3;
-            block <<= 1;
-            block  &= 15;
-            block  |= bit_r;
-            bit_r   = bit_l;
+            bit_l    = bcd[j] >> 3;
+            bcd[j] <<= 1;
+            bcd[j]  &= 15;
+            bcd[j]  |= bit_r;
+            bit_r    = bit_l;
         }
 
         // Update carry
@@ -612,7 +606,7 @@ const std::string bnl::str(const bnl::integer &n, const int &radix) {
         str.append("1");
 
     // Append the BCD data and return it
-    str.append(reinterpret_cast<const char *>(bcd + zeros));
+    str.append(reinterpret_cast<const char *>(bcd + zeros), digits - zeros);
     std::free(bcd);
     return str;
 }
@@ -957,7 +951,7 @@ const bnl::integer operator >> (const bnl::integer &a, const bnl::integer &b) {
     // Bit shift and answer variables
     const std::size_t shift_r = static_cast<std::size_t>(b.data[0] & 31);
     const std::size_t shift_l = 32 - shift_r;
-    const bnl::ulint offset_mask = (1 << shift_r) - 1;
+    const bnl::ulint offset_mask = (static_cast<bnl::ulint>(1) << shift_r) - 1;
     bnl::integer ans(a.size - block_shift, a.sign);
 
 
