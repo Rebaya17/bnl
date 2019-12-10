@@ -14,7 +14,7 @@ CP := cp -ruv
 
 
 # Compiler
-FLAGS = -ansi -Wall -Wextra -Wpedantic
+FLAGS = -std=c++11 -Wall -Wextra -Wpedantic
 
 
 # Main target

@@ -20,7 +20,7 @@ See [main.cpp] for example of use.
 
 # Features
 
- - Written in C++98
+ - Written in C++11
  - Dependencies free
  - All the classes and functions are defined inside the `bnl` namespace
  - Arbitrary precision integer class with all operators overloaded
@@ -31,10 +31,9 @@ See [main.cpp] for example of use.
 
 The `bnl::integer` class provides an arbitrary precision integer implementation.
 The numerical data is stored in raw binary format by a self-managed dynamic
-array of `unsigned long int` assuming the data type is 8 bytes wide, ordered
-from the least significant to the most significant data block. Each block of
-data can store values in the interval [0, 2<sup>32</sup>) simulating a base
-2<sup>32</sup> - 1 representation.
+array of `std::uint64_t`, ordered from the least significant to the most
+significant data block. Each block of data can store values in the interval
+[0, 2<sup>32</sup>) simulating a base 2<sup>32</sup> - 1 representation.
 
 The numeric data is converting from raw binary to `std::string` and from
 `std::string` to raw binary with the Double-Dabble and Reverse Double-Dabble
@@ -192,16 +191,17 @@ It has two int members: `quot` and `rem`.
 
 # Requirements and considerations
 
-Since the code is written in C++98 standard and is dependencies free, can be
-compiled by most compilers, but some data sizes have been assumed, so not
-defined errors may occurs if the target system have different data types sizes
-to the next table.
+Since the code is written in C++11 standard and is dependencies free, can be
+compiled by most compilers. To ensure the portability, the integer data types of
+fixed width ptovided by `cstdint` have been used, but other data types sizes
+like `long double` have been assumed. The assumed data types sizes are in to the
+next table.
 
 | Data type           | Size in bytes |
 | ------------------- | ------------: |
-| `unsigned char`     |             1 |
-| `unsigned int`      |             4 |
-| `unsigned long int` |             8 |
+| `std::uint8_t`      |             1 |
+| `std::uint32_t`     |             4 |
+| `std::uint64_t`     |             8 |
 | `long double`       |            16 |
 
 

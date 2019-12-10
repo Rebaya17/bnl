@@ -3,8 +3,8 @@
         {
             "name": "Linux",
             "compilerPath": "/usr/bin/g++",
-            "cStandard": "c89",
-            "cppStandard": "c++98",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
             "intelliSenseMode": "gcc-x64"
         }
     ],

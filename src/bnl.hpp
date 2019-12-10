@@ -1,6 +1,7 @@
 #ifndef __BNL_HPP_
 #define __BNL_HPP_
 
+#include <cstdint> // std::uint8_t, std::uint32_t, std::uint64_t
 #include <cstddef> // std::size_t
 
 
@@ -8,14 +9,14 @@
 namespace bnl {
     // Type definitions
 
-    // Unsigned char assumed to be 1 bytes wide
-    typedef unsigned char uchar;
+    // Unsigned integer of 1 bytes wide
+    typedef std::uint8_t uchar;
 
-    // Unsigned long int assumed to be 4 bytes wide
-    typedef unsigned int uint;
+    // Unsigned integer of 4 bytes wide
+    typedef std::uint32_t uint;
 
-    // Unsigned long int assumed to be 8 bytes wide
-    typedef unsigned long int ulint;
+    // Unsigned integer of 8 bytes wide
+    typedef std::uint64_t ulint;
 
     // Long double assumed to be 16 bytes wide
     typedef long double ldouble;
