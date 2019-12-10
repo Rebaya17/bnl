@@ -25,6 +25,7 @@ const bnl::integer bnl::integer::one("1");
 int bnl::integer::cmp(const bnl::integer &a, const bnl::integer &b) {
     // Compare each data block from the most significative to the
     // least significative
+#pragma warning(suppress: 6293)
     for (std::size_t i = a.size - 1; i < a.size; i--)
         if (a.data[i] != b.data[i])
             // Returns 1 if a < b, or -1 if a > b
@@ -116,6 +117,7 @@ void bnl::integer::shrink() {
         size--;
 
     // Resize the numeric data
+#pragma warning(suppress: 6308)
     data = static_cast<bnl::ulint *>(std::realloc(data, size * bnl::ulint_size));
 }
 
@@ -334,6 +336,7 @@ const bnl::div_t bnl::integer::div(const bnl::integer &a, const bnl::integer &b)
         if (offset) {
             // Resize and append offset
             ans.quot.size++;
+#pragma warning(suppress: 6308)
             ans.quot.data = static_cast<bnl::ulint *>(std::realloc(ans.quot.data, ans.quot.size * bnl::ulint_size));
             ans.quot.data[ans.quot.size - 1] = offset;
         }
@@ -356,6 +359,7 @@ const bnl::div_t bnl::integer::div(const bnl::integer &a, const bnl::integer &b)
         if (offset) {
             // Resize and append offset
             ans.rem.size++;
+#pragma warning(suppress: 6308)
             ans.rem.data = static_cast<bnl::ulint *>(std::realloc(ans.rem.data, ans.rem.size * bnl::ulint_size));
             ans.rem.data[ans.rem.size - 1] = offset;
         }
@@ -386,6 +390,7 @@ const bnl::div_t bnl::integer::div(const bnl::integer &a, const bnl::integer &b)
     if (offset) {
         // Resize and append offset
         ans.quot.size++;
+#pragma warning(suppress: 6308)
         ans.quot.data = static_cast<bnl::ulint *>(std::realloc(ans.quot.data, ans.quot.size * bnl::ulint_size));
         ans.quot.data[ans.quot.size - 1] = offset;
     }
@@ -565,11 +570,13 @@ const std::string bnl::str(const bnl::integer &n, const int &radix) {
     bool carry = false;
 
     // Main bucle for each bit
+#pragma warning(suppress: 6293)
     for (std::size_t i = bits - 1; i < bits; i--) {
         bnl::uchar bit_l = 0;
         bnl::uchar bit_r = (n.data[i >> 5] & (static_cast<bnl::ulint>(1) << (i & 31))) > 0;
 
         // Shift each block
+#pragma warning(suppress: 6293)
         for (std::size_t j = digits_top; j < digits; j--) {
             // Condition
             if (bcd[j] >= 5)
@@ -684,6 +691,7 @@ const bnl::integer operator * (const bnl::integer &a, const bnl::integer &b) {
     for (std::size_t i = 0; i < n.size; i++) {
         // Resize the intermediate product
         prod.size = m.size + i;
+#pragma warning(suppress: 6308)
         prod.data = static_cast<bnl::ulint *>(std::realloc(prod.data, prod.size * bnl::ulint_size));
 
         // Right padding with zeros
@@ -700,6 +708,7 @@ const bnl::integer operator * (const bnl::integer &a, const bnl::integer &b) {
             prod.data[j] = m.data[k] * block + carry;
 
             // Check carry
+#pragma warning(suppress: 6385)
             if (prod.data[j] >= bnl::integer::base) {
                 carry = prod.data[j] / bnl::integer::base;
                 prod.data[j] &= bnl::integer::base_mask;
@@ -712,7 +721,9 @@ const bnl::integer operator * (const bnl::integer &a, const bnl::integer &b) {
         // Carry
         if (carry) {
             prod.size++;
+#pragma warning(suppress: 6308)
             prod.data = static_cast<bnl::ulint *>(std::realloc(prod.data, prod.size * bnl::ulint_size));
+#pragma warning(suppress: 6386)
             prod.data[prod.size - 1] = carry;
         }
 
@@ -804,6 +815,7 @@ const bnl::integer operator + (const bnl::integer &a, const bnl::integer &b) {
     // Carry
     if (carry) {
         ans.size++;
+#pragma warning(suppress: 6308)
         ans.data = static_cast<bnl::ulint *>(std::realloc(ans.data, ans.size * bnl::ulint_size));
         ans.data[ans.size - 1] = 1;
     }
@@ -922,7 +934,9 @@ const bnl::integer operator << (const bnl::integer &a, const bnl::integer &b) {
             throw memory_limit_exception;
 
         // Resize and append offset
+#pragma warning(suppress: 6308)
         ans.data = static_cast<bnl::ulint *>(std::realloc(ans.data, ans.size * bnl::ulint_size));
+#pragma warning(suppress: 6386)
         ans.data[ans.size - 1] = offset;
     }
 
@@ -1729,6 +1743,7 @@ bnl::integer &bnl::integer::operator = (const bnl::integer &n) {
     if ((this != &n) && (*this != n)) {
         size = n.size;
         sign = n.sign;
+#pragma warning(suppress: 6308)
         data = static_cast<bnl::ulint *>(std::realloc(data, size * bnl::ulint_size));
         bnl::integer::cpy(data, n.data, size);
     }
