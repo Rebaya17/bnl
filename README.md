@@ -20,7 +20,8 @@ See [main.cpp] for example of use.
 
 # Features
 
- - Written in C++11
+ - Written in MSVC 2019 under the C++11 standard. See the other branches for
+[C++98] and [C++11] (recommended) pure versions
  - Dependencies free
  - All the classes and functions are defined inside the `bnl` namespace
  - Arbitrary precision integer class with all operators overloaded
@@ -191,11 +192,11 @@ It has two int members: `quot` and `rem`.
 
 # Requirements and considerations
 
-Since the code is written in C++11 standard and is dependencies free, can be
-compiled by most compilers. To ensure the portability, the integer data types of
-fixed width ptovided by `cstdint` have been used, but other data types sizes
-like `long double` have been assumed. The assumed data types sizes are in to the
-next table.
+Since the code is written in MSVC 2019 under the C++11 standard and is
+dependencies free, can be compiled by most compilers. To ensure the portability
+the integer data types of fixed width ptovided by `cstdint` have been used, but
+other data types sizes like `long double` have been assumed. The assumed data
+types sizes are in to the next table.
 
 | Data type           | Size in bytes |
 | ------------------- | ------------: |
@@ -204,10 +205,15 @@ next table.
 | `std::uint64_t`     |             8 |
 | `long double`       |            16 |
 
+However, the [C++11] version is recommended to avoid portability issues for non
+MSVC environments. A [C++98] standard version is also available.
+
 
 [//]: # "Links references"
 
 [GMP]: https://gmplib.org/
 [main.cpp]: src/main.cpp
+[C++98]: https://github.com/Rebaya17/bnl/tree/master
+[C++11]: https://github.com/Rebaya17/bnl/tree/cpp11
 [MIT license]: LICENSE
 [`bnl::div_t`]: #the-bnldiv_t-struct
