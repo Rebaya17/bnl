@@ -20,7 +20,7 @@ See [main.cpp] for example of use.
 
 # Features
 
- - Written in C++11
+ - Written in C++11. See the other branches for [C++98] and [MSVC] versions
  - Dependencies free
  - All the classes and functions are defined inside the `bnl` namespace
  - Arbitrary precision integer class with all operators overloaded
@@ -204,10 +204,15 @@ next table.
 | `std::uint64_t`     |             8 |
 | `long double`       |            16 |
 
+However, the [C++98] version but it may have portability issues. A version for
+[MSVC] is also available.
+
 
 [//]: # "Links references"
 
 [GMP]: https://gmplib.org/
 [main.cpp]: src/main.cpp
+[C++98]: https://github.com/Rebaya17/bnl/tree/master
+[MSVC]: https://github.com/Rebaya17/bnl/tree/msvc
 [MIT license]: LICENSE
 [`bnl::div_t`]: #the-bnldiv_t-struct
